@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% extends "layout.html" %}
+{% block content %}
+<h1>Welcome to the Blood Donation Management System</h1>
+<p>Manage donors, hospitals, and donations efficiently.</p>
+<a href="{{ url_for('scheduled_donations') }}">View Scheduled Donations</a>
+<a href="{{ url_for('eligible_donors') }}">View Eligible Donors</a>
+{% endblock %}

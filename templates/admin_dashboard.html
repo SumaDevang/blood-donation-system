@@ -2,9 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Blood Donation System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS (optional) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <div class="container mt-5">
+        <!-- Header -->
+        <h1 class="text-center mb-4">Admin Dashboard</h1>
 
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Donations Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Donor Name</th>
+                        <th>Blood Type</th>
+                        <th>Hospital Name</th>
+                        <th>Donation Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if donations %}
+                        {% for donation in donations %}
+                            <tr>
+                                <td>{{ donation.id }}</td>
+                                <td>{{ donation.donor_name }}</td>
+                                <td>{{ donation.blood_type }}</td>
+                                <td>{{ donation.hospital_name }}</td>
+                                <td>{{ donation.donation_date }}</td>
+                                <td>
+                                    <a href="{{ url_for('edit_donation', id=donation.id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <a href="{{ url_for('delete_donation', id=donation.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this donation?');">Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No donations found.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add Donation Button -->
+        <div class="text-center mt-3">
+            <a href="{{ url_for('add_donation') }}" class="btn btn-success">Add New Donation</a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

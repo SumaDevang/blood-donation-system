@@ -2,9 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Blood Donation Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('donor_dashboard') }}">Donor Dashboard</a>
+        <a href="{{ url_for('hospital_dashboard') }}">Hospital Dashboard</a>
+        <a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+    </nav>
+    {% block content %}
+    {% endblock %}
 </body>
 </html>

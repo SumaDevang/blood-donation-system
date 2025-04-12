@@ -1,10 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% extends "layout.html" %}
+{% block content %}
+<h1>Donor Dashboard</h1>
+<a href="{{ url_for('add_donor') }}">Add New Donor</a>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Blood Type</th>
+        <th>Contact</th>
+        <th>Email</th>
+    </tr>
+    {% for donor in donors %}
+    <tr>
+        <td>{{ donor['DonorID'] }}</td>
+        <td>{{ donor['Name'] }}</td>
+        <td>{{ donor['BloodType'] }}</td>
+        <td>{{ donor['ContactInfo'] }}</td>
+        <td>{{ donor['Email'] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

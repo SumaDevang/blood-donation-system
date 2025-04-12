@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Add New Donor</h1>
+<form method="POST">
+    <label>Name: <input type="text" name="name" required></label><br>
+    <label>Date of Birth: <input type="date" name="dob" required></label><br>
+    <label>Blood Type:
+        <select name="blood_type" required>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+        </select>
+    </label><br>
+    <label>Contact Info: <input type="text" name="contact" required></label><br>
+    <label>Email: <input type="email" name="email" required></label><br>
+    <label>Last Donation: <input type="date" name="last_donation"></label><br>
+    <button type="submit">Add Donor</button>
+</form>
+{% endblock %}
