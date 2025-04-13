@@ -144,3 +144,27 @@ th, td {
 th {
     background-color: #f2f2f2;
 }
+
+/* Existing styles */
+.hospital-lookup, .blood-requests, .donation-schedules, .donor-search {
+    margin-bottom: 30px;
+}
+
+.hospital-lookup form, .blood-requests form, .donor-search form {
+    margin-bottom: 20px;
+}
+
+.blood-requests h3, .donor-search h3 {
+    font-size: 1.5em;
+    color: #d32f2f;
+    margin-top: 20px;
+}
+
+.blood-requests p, .donation-schedules p, .donor-search p {
+    font-size: 1.1em;
+    color: #666;
+}
+
+.blood-requests table, .donation-schedules table, .donor-search table {
+    margin-top: 10px;
+}

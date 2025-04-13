@@ -19,6 +19,16 @@ CREATE TABLE Hospitals (
     HospitalType TEXT NOT NULL CHECK (HospitalType IN ('Public', 'Private', 'Military', 'Other'))
 );
 
+-- Creating BloodRequests Table - Records of blood requests by hospitals
+CREATE TABLE BloodRequests (
+    RequestID INTEGER PRIMARY KEY AUTOINCREMENT,
+    HospitalID INTEGER NOT NULL,
+    BloodType TEXT NOT NULL CHECK (BloodType IN ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')),
+    Quantity INTEGER NOT NULL CHECK (Quantity > 0),
+    RequestDate DATE NOT NULL,
+    FOREIGN KEY (HospitalID) REFERENCES Hospitals(HospitalID) ON DELETE CASCADE
+);
+
 -- Creating Donations Table - Records of blood donations
 CREATE TABLE Donations (
     DonationID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,5 +50,7 @@ CREATE TABLE DonationEligibility (
     EligibilityStatus TEXT NOT NULL CHECK (EligibilityStatus IN ('Eligible', 'Not Eligible', 'Pending')),
     FOREIGN KEY (DonorID) REFERENCES Donors(DonorID) ON DELETE CASCADE
 );
+
+
 
 

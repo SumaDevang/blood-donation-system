@@ -1,112 +1,144 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hospital Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        body {
-            background-image: url('https://images.unsplash.com/photo-1580281658626-ee379fecb9a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'); /* Blood bag in hospital */
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            font-family: 'Georgia', 'Times New Roman', serif;
-            color: #333;
-            position: relative;
-        }
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6); /* Dark overlay for readability */
-            z-index: 0;
-        }
-        .navbar, .container-main {
-            position: relative;
-            z-index: 1;
-        }
-        .navbar {
-            background-color: #b22222; /* Dark red for blood donation theme */
-            border-bottom: 2px solid #8b1a1a;
-        }
-        .navbar-brand, .nav-link {
-            color: white !important;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .nav-link:hover {
-            color: #ffcccc !important;
-        }
-        .container-main {
-            max-width: 800px;
-            margin: 50px auto;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-        h1 {
-            color: #b22222;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">Blood Donation Management System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('hospital_dashboard') }}">Hospital Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Admin Dashboard</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <div class="container-main">
-        <h1>Hospital Dashboard</h1>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Hospital ID</th>
-                    <th>Name</th>
-                    <th>Location</th>
-                    <th>Contact Info</th>
-                    <th>Hospital Type</th>
-                </tr>
-            </thead>
-            <tbody>
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Hospital Dashboard</h1>
+    <p class="subtitle">Manage blood requests, track donation schedules, and access donor information.</p>
+
+    <section class="hospital-lookup">
+        <h2>Select Your Hospital</h2>
+        <form method="POST" action="{{ url_for('hospital_dashboard') }}">
+            <label for="hospital_id">Hospital:</label>
+            <select name="hospital_id" id="hospital_id" required>
+                <option value="" disabled selected>Select a hospital</option>
                 {% for hospital in hospitals %}
-                <tr>
-                    <td>{{ hospital.hospital_id }}</td>
-                    <td>{{ hospital.name }}</td>
-                    <td>{{ hospital.location }}</td>
-                    <td>{{ hospital.contact_info }}</td>
-                    <td>{{ hospital.hospital_type }}</td>
-                </tr>
+                    <option value="{{ hospital['HospitalID'] }}">{{ hospital['Name'] }} ({{ hospital['Location'] }})</option>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+            </select>
+            <button type="submit" class="btn">View Details</button>
+        </form>
+    </section>
+
+    {% if selected_hospital %}
+        <section class="blood-requests">
+            <h2>Manage Blood Requests for {{ selected_hospital['Name'] }}</h2>
+            <h3>Create a Blood Request</h3>
+            <form method="POST" action="{{ url_for('hospital_dashboard') }}">
+                <input type="hidden" name="form_type" value="request">
+                <input type="hidden" name="hospital_id" value="{{ selected_hospital['HospitalID'] }}">
+                <label for="blood_type">Blood Type:</label>
+                <select name="blood_type" id="blood_type" required>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select><br>
+
+                <label for="quantity">Quantity (Units):</label>
+                <input type="number" name="quantity" id="quantity" min="1" required><br>
+
+                <label for="request_date">Request Date:</label>
+                <input type="date" name="request_date" id="request_date" required><br>
+
+                <button type="submit" class="btn">Submit Request</button>
+            </form>
+
+            <h3>Current Blood Requests</h3>
+            {% if blood_requests %}
+                <table>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Blood Type</th>
+                        <th>Quantity</th>
+                        <th>Request Date</th>
+                        <th>Action</th>
+                    </tr>
+                    {% for request in blood_requests %}
+                        <tr>
+                            <td>{{ request['RequestID'] }}</td>
+                            <td>{{ request['BloodType'] }}</td>
+                            <td>{{ request['Quantity'] }}</td>
+                            <td>{{ request['RequestDate'] }}</td>
+                            <td>
+                                <a href="{{ url_for('delete_blood_request', request_id=request['RequestID']) }}"
+                                   onclick="return confirm('Are you sure you want to delete this request?')">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p>No blood requests found for this hospital.</p>
+            {% endif %}
+        </section>
+
+        <section class="donation-schedules">
+            <h2>Track Donation Schedules for {{ selected_hospital['Name'] }}</h2>
+            {% if scheduled_donations %}
+                <table>
+                    <tr>
+                        <th>Donor Name</th>
+                        <th>Donation Date</th>
+                        <th>Blood Type</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for donation in scheduled_donations %}
+                        <tr>
+                            <td>{{ donation['DonorName'] }}</td>
+                            <td>{{ donation['DonationDate'] }}</td>
+                            <td>{{ donation['BloodType'] }}</td>
+                            <td>{{ donation['Status'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p>No scheduled donations found for this hospital.</p>
+            {% endif %}
+        </section>
+
+        <section class="donor-search">
+            <h2>Search Donors by Blood Type</h2>
+            <form method="POST" action="{{ url_for('hospital_dashboard') }}">
+                <input type="hidden" name="form_type" value="search_donors">
+                <input type="hidden" name="hospital_id" value="{{ selected_hospital['HospitalID'] }}">
+                <label for="blood_type_search">Blood Type:</label>
+                <select name="blood_type" id="blood_type_search" required>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+                <button type="submit" class="btn">Search Donors</button>
+            </form>
+
+            {% if donors_by_blood_type %}
+                <h3>Donors with Blood Type {{ blood_type_searched }}</h3>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Blood Type</th>
+                        <th>Contact Info</th>
+                        <th>Email</th>
+                        <th>Last Donation Date</th>
+                    </tr>
+                    {% for donor in donors_by_blood_type %}
+                        <tr>
+                            <td>{{ donor['Name'] }}</td>
+                            <td>{{ donor['BloodType'] }}</td>
+                            <td>{{ donor['ContactInfo'] }}</td>
+                            <td>{{ donor['Email'] }}</td>
+                            <td>{{ donor['LastDonationDate'] or 'N/A' }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+        </section>
+    {% endif %}
+</div>
+{% endblock %}
