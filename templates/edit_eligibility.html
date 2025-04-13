@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Edit Eligibility Check</h1>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="POST" action="{{ url_for('edit_eligibility', id=eligibility['EligibilityID']) }}">
+        <label for="donor_id">Donor:</label>
+        <select name="donor_id" id="donor_id" required>
+            {% for donor in donors %}
+                <option value="{{ donor['DonorID'] }}" {% if donor['DonorID'] == eligibility['DonorID'] %}selected{% endif %}>
+                    {{ donor['Name'] }} ({{ donor['BloodType'] }})
+                </option>
+            {% endfor %}
+        </select><br>
+
+        <label for="last_eligibility_check">Last Eligibility Check Date:</label>
+        <input type="date" name="last_eligibility_check" id="last_eligibility_check" value="{{ eligibility['LastEligibilityCheck'] }}" required><br>
+
+        <label for="eligibility_status">Eligibility Status:</label>
+        <select name="eligibility_status" id="eligibility_status" required>
+            <option value="Eligible" {% if eligibility['EligibilityStatus'] == 'Eligible' %}selected{% endif %}>Eligible</option>
+            <option value="Not Eligible" {% if eligibility['EligibilityStatus'] == 'Not Eligible' %}selected{% endif %}>Not Eligible</option>
+        </select><br>
+
+        <button type="submit" class="btn">Update Eligibility Check</button>
+    </form>
+</div>
+{% endblock %}

@@ -64,6 +64,7 @@
 
     <section class="all-donations">
         <h2>All Donations</h2>
+        <a href="{{ url_for('add_donation') }}" class="btn">Add New Donation</a>
         <form method="GET" action="{{ url_for('admin_dashboard') }}">
             <label for="status_filter">Filter by Status:</label>
             <select name="status_filter" id="status_filter" onchange="this.form.submit()">
@@ -128,6 +129,35 @@
         </table>
     </section>
 
+    <section class="all-eligibility">
+        <h2>All Eligibility Checks</h2>
+        <a href="{{ url_for('add_eligibility') }}" class="btn">Add New Eligibility Check</a>
+        <table>
+            <tr>
+                <th>Eligibility ID</th>
+                <th>Donor ID</th>
+                <th>Last Eligibility Check</th>
+                <th>Eligibility Status</th>
+                <th>Actions</th>
+            </tr>
+            {% for eligibility in donation_eligibility %}
+            <tr>
+                <td>{{ eligibility['EligibilityID'] }}</td>
+                <td>{{ eligibility['DonorID'] }}</td>
+                <td>{{ eligibility['LastEligibilityCheck'] }}</td>
+                <td>{{ eligibility['EligibilityStatus'] }}</td>
+                <td>
+                    <a href="{{ url_for('edit_eligibility', id=eligibility['EligibilityID']) }}">Edit</a> |
+                    <a href="{{ url_for('delete_eligibility', id=eligibility['EligibilityID']) }}"
+                       onclick="return confirm('Are you sure you want to delete?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </section>
+
+
+
     <section class="reports">
         <h2>Generate Reports</h2>
         <h3>System Summary</h3>
@@ -136,7 +166,7 @@
         <p><strong>Total Donations:</strong> {{ summary.total_donations }}</p>
         <p><strong>Total Blood Requests:</strong> {{ summary.total_blood_requests }}</p>
 
-        <h3>Donors with Completed Donations by Blood Type</h3>
+        <h3>Completed Donations by Blood Type</h3>
         <table>
             <tr>
                 <th>Blood Type</th>

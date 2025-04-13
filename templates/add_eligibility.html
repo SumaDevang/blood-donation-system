@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Add New Eligibility Check</h1>
+    {% if success %}
+        <p class="success">{{ success }}</p>
+    {% endif %}
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="POST" action="{{ url_for('add_eligibility') }}">
+        <label for="donor_id">Donor:</label>
+        <select name="donor_id" id="donor_id" required>
+            <option value="" disabled selected>Select a donor</option>
+            {% for donor in donors %}
+                <option value="{{ donor['DonorID'] }}">{{ donor['Name'] }} ({{ donor['BloodType'] }})</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="last_eligibility_check">Last Eligibility Check Date:</label>
+        <input type="date" name="last_eligibility_check" id="last_eligibility_check" required><br>
+
+        <label for="eligibility_status">Eligibility Status:</label>
+        <select name="eligibility_status" id="eligibility_status" required>
+            <option value="Eligible">Eligible</option>
+            <option value="Not Eligible">Not Eligible</option>
+        </select><br>
+
+        <button type="submit" class="btn">Add Eligibility Check</button>
+    </form>
+</div>
+{% endblock %}

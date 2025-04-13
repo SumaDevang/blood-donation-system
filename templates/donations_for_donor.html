@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Donations for Donor ID {{ donor_id }}</h1>
+    {% if donations %}
+        <table>
+            <tr>
+                <th>Donation ID</th>
+                <th>Donor Name</th>
+                <th>Hospital Name</th>
+                <th>Donation Date</th>
+                <th>Blood Type</th>
+                <th>Status</th>
+            </tr>
+            {% for donation in donations %}
+            <tr>
+                <td>{{ donation['DonationID'] }}</td>
+                <td>{{ donation['DonorName'] }}</td>
+                <td>{{ donation['HospitalName'] }}</td>
+                <td>{{ donation['DonationDate'] }}</td>
+                <td>{{ donation['BloodType'] }}</td>
+                <td>{{ donation['Status'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No donations found for Donor ID {{ donor_id }}.</p>
+    {% endif %}
+    <p><a href="{{ url_for('admin_dashboard') }}" class="btn">Back to Admin Dashboard</a></p>
+</div>
+{% endblock %}

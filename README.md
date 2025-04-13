@@ -47,8 +47,7 @@ Homepage: Professional design with role-based access descriptions and an enhance
 Donor Registration Page: Register as a new donor and access the Donor Dashboard to manage your donations. Features a formal, professional design with success/error messages for better user feedback.
 Donor Dashboard: Schedule new donations, view your donation history, and manage upcoming appointments by entering your email. Now the central hub for all donor activities, with enhanced cancellation feedback.
 Hospital Dashboard: Manage blood requests, track donation schedules, and search donors by blood type requirements.
-Admin Dashboard: Oversee system operations, manage all data (donors, hospitals, donations, blood requests), and generate reports (system summary with 8 completed donations, donors with completed donations by blood type totaling 8 distinct donors, donations per hospital with completed donations only, downloadable CSV). Added status filter to All Donations table. Fixed Edit and Delete functionality for donors to redirect to Admin Dashboard.
-Organize a Blood Drive: Request to organize a blood drive event and view scheduled blood drives. Fixed navigation bar link to ensure accessibility.
+Admin Dashboard: Oversee system operations, manage all data (donors, hospitals, donations, blood requests, eligibility checks), and generate reports (system summary with 8 completed donations, completed donations by blood type totaling 8, donations per hospital with completed donations only, downloadable CSV). Added status filter to All Donations table and full CRUD operations for all tables. Fixed Edit and Delete functionality for donors to redirect to Admin Dashboard.
 Biomedical Services: Learn about blood testing, storage, distribution, quality assurance, and safety protocols, with statistics on total donations (8) and available blood units (8).
 Error Handling: Added a custom 404 error page for better user experience when accessing invalid routes.
 
