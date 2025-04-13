@@ -483,7 +483,6 @@ def scheduled_donations():
     results = conn.execute(query).fetchall()
     return render_template('query_results.html', results=results, title="Scheduled Donations")
 
-
 # Predefined Query: Eligible Donors
 @app.route('/eligible_donors')
 def eligible_donors():
@@ -498,11 +497,48 @@ def eligible_donors():
     return render_template('query_results.html', results=results, title="Eligible Donors")
 
 
-# Host a Blood Drive page
-@app.route('/host-blood-drive')
-def host_blood_drive():
-    return render_template('host_blood_drive.html', active_page='host_blood_drive')
+# Predefined Query: Donors by Blood Type
+@app.route('/donors_by_blood_type')
+def donors_by_blood_type():
+    conn = get_db()
+    query = '''
+    SELECT BloodType, COUNT(*) as Count
+    FROM Donors
+    GROUP BY BloodType
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Donors by Blood Type")
 
+# Predefined Query: Recent Donations (Last 5 Completed)
+@app.route('/recent_donations')
+def recent_donations():
+    conn = get_db()
+    query = '''
+    SELECT Donors.Name, Hospitals.Name AS HospitalName, Donations.DonationDate, Donations.BloodType
+    FROM Donations
+    JOIN Donors ON Donations.DonorID = Donors.DonorID
+    JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
+    WHERE Donations.Status = 'Completed'
+    ORDER BY Donations.DonationDate DESC
+    LIMIT 5
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Recent Donations (Last 5 Completed)")
+
+# Predefined Query: Hospitals with Most Donations (Top 3)
+@app.route('/hospitals_with_most_donations')
+def hospitals_with_most_donations():
+    conn = get_db()
+    query = '''
+    SELECT Hospitals.Name, COUNT(Donations.DonationID) as DonationCount
+    FROM Hospitals
+    LEFT JOIN Donations ON Hospitals.HospitalID = Donations.HospitalID
+    GROUP BY Hospitals.HospitalID, Hospitals.Name
+    ORDER BY DonationCount DESC
+    LIMIT 3
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Hospitals with Most Donations (Top 3)")
 
 # Biomedical Services page
 @app.route('/biomedical-services')
