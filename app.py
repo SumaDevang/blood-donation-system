@@ -30,13 +30,14 @@ def index():
     return render_template('index.html', active_page='index')
 
 
-# Donate Blood page
 @app.route('/donate-blood', methods=['GET', 'POST'])
 def donate_blood():
     conn = get_db()
 
     # Fetch hospitals for the scheduling form
     hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
+    success = None
+    error = None
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -48,14 +49,22 @@ def donate_blood():
             blood_type = request.form['blood_type']
             contact = request.form['contact']
             email = request.form['email']
-            last_donation = request.form.get('last_donation')  # Use .get() to avoid KeyError
+            last_donation = request.form.get('last_donation')
             try:
                 conn.execute(
                     'INSERT INTO Donors (Name, DateOfBirth, BloodType, ContactInfo, Email, LastDonationDate) VALUES (?, ?, ?, ?, ?, ?)',
                     (name, dob, blood_type, contact, email, last_donation))
                 conn.commit()
+                # After registering, add a default eligibility record (assume "Pending" until checked)
+                donor = conn.execute('SELECT DonorID FROM Donors WHERE Email = ?', (email,)).fetchone()
+                if donor:
+                    conn.execute(
+                        'INSERT INTO DonationEligibility (DonorID, LastEligibilityCheck, EligibilityStatus) VALUES (?, ?, ?)',
+                        (donor['DonorID'], '2025-04-12', 'Pending'))  # Use current date
+                    conn.commit()
+                success = "Donor registered successfully! Please wait for eligibility check."
             except sqlite3.OperationalError as e:
-                return f"Database error: {e}", 500
+                error = f"Database error: {e}"
 
         # Handle Donation Scheduling Form
         elif form_type == 'schedule':
@@ -66,33 +75,46 @@ def donate_blood():
             # Find the donor by email
             donor = conn.execute('SELECT * FROM Donors WHERE Email = ?', (donor_email,)).fetchone()
             if not donor:
-                return render_template('donate_blood.html', active_page='donate_blood', hospitals=hospitals,
-                                       error="Donor not found. Please register first."), 400
+                error = "Donor not found. Please register first."
+            else:
+                # Check eligibility status
+                eligibility = conn.execute('''
+                    SELECT EligibilityStatus 
+                    FROM DonationEligibility 
+                    WHERE DonorID = ? 
+                    ORDER BY LastEligibilityCheck DESC 
+                    LIMIT 1
+                ''', (donor['DonorID'],)).fetchone()
+                if eligibility and eligibility['EligibilityStatus'] != 'Eligible':
+                    error = f"Cannot schedule donation: You are currently {eligibility['EligibilityStatus'].lower()} to donate."
+                else:
+                    # Get the donor's blood type
+                    blood_type = donor['BloodType']
+                    donor_id = donor['DonorID']
+                    # Insert the donation record
+                    try:
+                        conn.execute(
+                            'INSERT INTO Donations (DonorID, HospitalID, DonationDate, BloodType, Status) VALUES (?, ?, ?, ?, ?)',
+                            (donor_id, hospital_id, donation_date, blood_type, 'Scheduled'))
+                        conn.commit()
+                        success = f"Donation scheduled for {donation_date}!"
+                    except sqlite3.OperationalError as e:
+                        error = f"Database error: {e}"
 
-            # Get the donor's blood type
-            blood_type = donor['BloodType']
-            donor_id = donor['DonorID']
-
-            # Insert the donation record
-            try:
-                conn.execute(
-                    'INSERT INTO Donations (DonorID, HospitalID, DonationDate, BloodType, Status) VALUES (?, ?, ?, ?, ?)',
-                    (donor_id, hospital_id, donation_date, blood_type, 'Scheduled'))
-                conn.commit()
-            except sqlite3.OperationalError as e:
-                return f"Database error: {e}", 500
-
-        return redirect(url_for('donate_blood'))  # Redirect to refresh the page
+        return render_template('donate_blood.html', active_page='donate_blood', hospitals=hospitals,
+                               success=success, error=error)
 
     return render_template('donate_blood.html', active_page='donate_blood', hospitals=hospitals)
+
+
 # Donor Dashboard
 @app.route('/donor', methods=['GET', 'POST'])
 def donor_dashboard():
     conn = get_db()
-    donors = conn.execute('SELECT * FROM Donors').fetchall()
     donor = None
     donation_history = None
     upcoming_appointments = None
+    eligibility_status = None
 
     if request.method == 'POST':
         donor_email = request.form['donor_email']
@@ -114,10 +136,23 @@ def donor_dashboard():
                 JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
                 WHERE Donations.DonorID = ? AND Donations.Status = 'Scheduled'
             ''', (donor_id,)).fetchall()
+            # Fetch eligibility status
+            eligibility = conn.execute('''
+                SELECT EligibilityStatus, LastEligibilityCheck 
+                FROM DonationEligibility 
+                WHERE DonorID = ? 
+                ORDER BY LastEligibilityCheck DESC 
+                LIMIT 1
+            ''', (donor_id,)).fetchone()
+            if eligibility:
+                eligibility_status = {
+                    'status': eligibility['EligibilityStatus'],
+                    'last_check': eligibility['LastEligibilityCheck']
+                }
 
-    return render_template('donor_dashboard.html', donors=donors, donor=donor,
-                          donation_history=donation_history, upcoming_appointments=upcoming_appointments)
-
+    return render_template('donor_dashboard.html', donor=donor,
+                          donation_history=donation_history, upcoming_appointments=upcoming_appointments,
+                          eligibility_status=eligibility_status)
 # Cancel Appointment
 @app.route('/donor/cancel/<int:donation_id>')
 def cancel_appointment(donation_id):
@@ -128,6 +163,9 @@ def cancel_appointment(donation_id):
     except sqlite3.OperationalError as e:
         return f"Database error: {e}", 500
     return redirect(url_for('donor_dashboard'))
+
+
+
 
 # Hospital Dashboard
 @app.route('/hospital', methods=['GET', 'POST'])

@@ -168,3 +168,21 @@ th {
 .blood-requests table, .donation-schedules table, .donor-search table {
     margin-top: 10px;
 }
+
+.success {
+    color: #d32f2f;
+    font-weight: bold;
+    margin-bottom: 20px;
+    background-color: #f9e6e6;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.error {
+    color: #d32f2f;
+    font-weight: bold;
+    margin-bottom: 20px;
+    background-color: #f9e6e6;
+    padding: 10px;
+    border-radius: 5px;
+}

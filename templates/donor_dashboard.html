@@ -17,6 +17,12 @@
             <p><strong>Name:</strong> {{ donor['Name'] }}</p>
             <p><strong>Email:</strong> {{ donor['Email'] }}</p>
             <p><strong>Blood Type:</strong> {{ donor['BloodType'] }}</p>
+            {% if eligibility_status %}
+                <p><strong>Eligibility Status:</strong> {{ eligibility_status['status'] }}</p>
+                <p><strong>Last Eligibility Check:</strong> {{ eligibility_status['last_check'] }}</p>
+            {% else %}
+                <p><strong>Eligibility Status:</strong> Not available</p>
+            {% endif %}
 
             <h3>Your Donation History</h3>
             {% if donation_history %}
@@ -56,7 +62,7 @@
                             <td>{{ appointment['BloodType'] }}</td>
                             <td>
                                 <a href="{{ url_for('cancel_appointment', donation_id=appointment['DonationID']) }}"
-                                   onclick="return confirm('Are you sure you want to cancel this upcoming appointment ?')">Cancel</a>
+                                   onclick="return confirm('Confirm Cancellation\n\nAre you sure you want to cancel this appointment for {{ appointment['DonationDate'] }} at {{ appointment['HospitalName'] }}?')">Cancel</a>
                             </td>
                         </tr>
                     {% endfor %}
