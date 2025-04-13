@@ -47,32 +47,9 @@
         </form>
     </section>
 
-    <section class="schedule-donation">
-        <h2>Schedule a Donation</h2>
-        <p>Already a donor? Schedule your next blood donation with a hospital.</p>
-        <form method="POST" action="{{ url_for('donate_blood') }}">
-            <input type="hidden" name="form_type" value="schedule">
-            <label for="donor_email">Donor Email:</label>
-            <input type="email" name="donor_email" id="donor_email" required><br>
-
-            <label for="hospital_id">Hospital:</label>
-            <select name="hospital_id" id="hospital_id" required>
-                <option value="" disabled selected>Select a hospital</option>
-                {% for hospital in hospitals %}
-                    <option value="{{ hospital['HospitalID'] }}">{{ hospital['Name'] }} ({{ hospital['Location'] }})</option>
-                {% endfor %}
-            </select><br>
-
-            <label for="donation_date">Donation Date:</label>
-            <input type="date" name="donation_date" id="donation_date" required><br>
-
-            <button type="submit" class="btn">Schedule Donation</button>
-        </form>
-    </section>
-
     <section class="donor-history">
-        <h2>View Your Donation History</h2>
-        <p>Track your past donations and manage upcoming appointments.</p>
+        <h2>Manage Your Donations</h2>
+        <p>Already a donor? Schedule new donations, track your donation history, and manage your upcoming appointments on the Donor Dashboard.</p>
         <a href="{{ url_for('donor_dashboard') }}" class="btn">Go to Donor Dashboard</a>
     </section>
 </div>

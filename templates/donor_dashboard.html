@@ -2,11 +2,19 @@
 {% block content %}
 <div class="container">
     <h1>Donor Dashboard</h1>
-    <p class="subtitle">View your donation history and manage your upcoming appointments.</p>
+    <p class="subtitle">Schedule new donations, view your donation history, and manage your upcoming appointments.</p>
+
+    {% if success %}
+        <p class="success">{{ success }}</p>
+    {% endif %}
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
 
     <section class="donor-lookup">
-        <h2>View Your Donation History and Appointments</h2>
+        <h2>Access Your Donor Profile</h2>
         <form method="POST" action="{{ url_for('donor_dashboard') }}">
+            <input type="hidden" name="form_type" value="lookup">
             <label for="donor_email">Enter Your Email:</label>
             <input type="email" name="donor_email" id="donor_email" required>
             <button type="submit" class="btn">View My Details</button>
@@ -17,12 +25,24 @@
             <p><strong>Name:</strong> {{ donor['Name'] }}</p>
             <p><strong>Email:</strong> {{ donor['Email'] }}</p>
             <p><strong>Blood Type:</strong> {{ donor['BloodType'] }}</p>
-            {% if eligibility_status %}
-                <p><strong>Eligibility Status:</strong> {{ eligibility_status['status'] }}</p>
-                <p><strong>Last Eligibility Check:</strong> {{ eligibility_status['last_check'] }}</p>
-            {% else %}
-                <p><strong>Eligibility Status:</strong> Not available</p>
-            {% endif %}
+
+            <h3>Schedule a New Donation</h3>
+            <form method="POST" action="{{ url_for('donor_dashboard') }}">
+                <input type="hidden" name="form_type" value="schedule">
+                <input type="hidden" name="donor_email" value="{{ donor['Email'] }}">
+                <label for="hospital_id">Hospital:</label>
+                <select name="hospital_id" id="hospital_id" required>
+                    <option value="" disabled selected>Select a hospital</option>
+                    {% for hospital in hospitals %}
+                        <option value="{{ hospital['HospitalID'] }}">{{ hospital['Name'] }} ({{ hospital['Location'] }})</option>
+                    {% endfor %}
+                </select><br>
+
+                <label for="donation_date">Donation Date:</label>
+                <input type="date" name="donation_date" id="donation_date" required><br>
+
+                <button type="submit" class="btn">Schedule Donation</button>
+            </form>
 
             <h3>Your Donation History</h3>
             {% if donation_history %}
@@ -61,8 +81,8 @@
                             <td>{{ appointment['DonationDate'] }}</td>
                             <td>{{ appointment['BloodType'] }}</td>
                             <td>
-                                <a href="{{ url_for('cancel_appointment', donation_id=appointment['DonationID']) }}"
-                                   onclick="return confirm('Confirm Cancellation\n\nAre you sure you want to cancel this appointment for {{ appointment['DonationDate'] }} at {{ appointment['HospitalName'] }}?')">Cancel</a>
+                               <a href="{{ url_for('cancel_appointment', donation_id=appointment['DonationID']) }}"
+                                  onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
                             </td>
                         </tr>
                     {% endfor %}
