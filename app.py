@@ -236,14 +236,21 @@ def delete_blood_request(request_id):
         return redirect(url_for('hospital_dashboard', hospital_id=hospital_id, error=f"Database error: {e}"))
     return redirect(url_for('hospital_dashboard', hospital_id=hospital_id, success="Blood request deleted successfully!"))
 
+
 # Admin Dashboard
 @app.route('/admin')
 def admin_dashboard():
     conn = get_db()
     donors = conn.execute('SELECT * FROM Donors').fetchall()
     hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
-    donations = conn.execute('SELECT * FROM Donations').fetchall()
     blood_requests = conn.execute('SELECT * FROM BloodRequests').fetchall()
+
+    # Handle Status Filter for Donations
+    status_filter = request.args.get('status_filter', 'all')
+    if status_filter == 'all':
+        donations = conn.execute('SELECT * FROM Donations').fetchall()
+    else:
+        donations = conn.execute('SELECT * FROM Donations WHERE Status = ?', (status_filter,)).fetchall()
 
     # System Summary
     summary = {
@@ -253,10 +260,15 @@ def admin_dashboard():
         'total_blood_requests': len(blood_requests)
     }
 
-    # Donors by Blood Type
-    donors_by_blood_type = defaultdict(int)
-    for donor in donors:
-        donors_by_blood_type[donor['BloodType']] += 1
+    # Completed Donations by Blood Type
+    donors_by_blood_type = conn.execute('''
+        SELECT Donors.BloodType, COUNT(Donations.DonationID) as Count
+        FROM Donors
+        JOIN Donations ON Donors.DonorID = Donations.DonorID
+        WHERE Donations.Status = 'Completed'
+        GROUP BY Donors.BloodType
+    ''').fetchall()
+    donors_by_blood_type = defaultdict(int, [(row['BloodType'], row['Count']) for row in donors_by_blood_type])
 
     # Donations per Hospital (only Completed donations)
     donations_per_hospital = conn.execute('''
@@ -269,8 +281,7 @@ def admin_dashboard():
     return render_template('admin_dashboard.html', donors=donors, hospitals=hospitals,
                           donations=donations, blood_requests=blood_requests,
                           summary=summary, donors_by_blood_type=donors_by_blood_type,
-                          donations_per_hospital=donations_per_hospital)
-
+                          donations_per_hospital=donations_per_hospital, status_filter=status_filter)
 
 # Add Hospital
 @app.route('/hospital/add', methods=['GET', 'POST'])

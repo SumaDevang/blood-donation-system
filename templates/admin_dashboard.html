@@ -64,6 +64,14 @@
 
     <section class="all-donations">
         <h2>All Donations</h2>
+        <form method="GET" action="{{ url_for('admin_dashboard') }}">
+            <label for="status_filter">Filter by Status:</label>
+            <select name="status_filter" id="status_filter" onchange="this.form.submit()">
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+                <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                <option value="Scheduled" {% if status_filter == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+            </select>
+        </form>
         <table>
             <tr>
                 <th>Donation ID</th>
@@ -85,7 +93,7 @@
                 <td>
                     <a href="{{ url_for('edit_donation', id=donation['DonationID']) }}">Edit</a> |
                     <a href="{{ url_for('delete_donation', id=donation['DonationID']) }}"
-                       onclick="return confirm('Are you sure you want to delete?')">Delete</a>
+                       onclick="return confirm('Are you sure?')">Delete</a>
                 </td>
             </tr>
             {% endfor %}
@@ -128,18 +136,22 @@
         <p><strong>Total Donations:</strong> {{ summary.total_donations }}</p>
         <p><strong>Total Blood Requests:</strong> {{ summary.total_blood_requests }}</p>
 
-        <h3>Donors by Blood Type</h3>
+        <h3>Donors with Completed Donations by Blood Type</h3>
         <table>
             <tr>
                 <th>Blood Type</th>
                 <th>Count</th>
             </tr>
-            {% for blood_type, count in donors_by_blood_type.items() %}
+            {% for blood_type in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
             <tr>
                 <td>{{ blood_type }}</td>
-                <td>{{ count }}</td>
+                <td>{{ donors_by_blood_type[blood_type] }}</td>
             </tr>
             {% endfor %}
+            <tr>
+                <td><strong>Total</strong></td>
+                <td><strong>{{ donors_by_blood_type.values() | sum }}</strong></td>
+            </tr>
         </table>
 
         <h3>Donations per Hospital</h3>
