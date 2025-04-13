@@ -56,7 +56,7 @@
                             <td>{{ appointment['BloodType'] }}</td>
                             <td>
                                 <a href="{{ url_for('cancel_appointment', donation_id=appointment['DonationID']) }}"
-                                   onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
+                                   onclick="return confirm('Are you sure you want to cancel this upcoming appointment ?')">Cancel</a>
                             </td>
                         </tr>
                     {% endfor %}
