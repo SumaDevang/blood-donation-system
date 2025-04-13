@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Add New Hospital</h1>
+    <form method="POST" action="{{ url_for('add_hospital') }}">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required><br>
+
+        <label for="location">Location:</label>
+        <input type="text" name="location" id="location" required><br>
+
+        <label for="contact_info">Contact Info:</label>
+        <input type="text" name="contact_info" id="contact_info" required><br>
+
+        <label for="hospital_type">Hospital Type:</label>
+        <select name="hospital_type" id="hospital_type" required>
+            <option value="Public">Public</option>
+            <option value="Private">Private</option>
+            <option value="Military">Military</option>
+            <option value="Other">Other</option>
+        </select><br>
+
+        <button type="submit" class="btn">Add Hospital</button>
+    </form>
+</div>
+{% endblock %}

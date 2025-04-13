@@ -1,51 +1,163 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">Blood Donation Management System</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('donor_dashboard') }}">Donor Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('hospital_dashboard') }}">Hospital Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <div class="container-main">
-        <h1>Admin Dashboard</h1>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Donor Name</th>
-                    <th>Blood Type</th>
-                    <th>Hospital Name</th>
-                    <th>Donation Date</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for donation in donations %}
-                <tr>
-                    <td>{{ donation.donor_name }}</td>
-                    <td>{{ donation.blood_type }}</td>
-                    <td>{{ donation.hospital_name }}</td>
-                    <td>{{ donation.donation_date }}</td>
-                    <td>{{ donation.status }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Admin Dashboard</h1>
+    <p class="subtitle">Oversee system operations, manage all data, and generate reports for blood donation activities.</p>
+
+    <section class="all-donors">
+        <h2>All Donors</h2>
+        <a href="{{ url_for('add_donor') }}" class="btn">Add New Donor</a>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Blood Type</th>
+                <th>Contact</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+            {% for donor in donors %}
+            <tr>
+                <td>{{ donor['DonorID'] }}</td>
+                <td>{{ donor['Name'] }}</td>
+                <td>{{ donor['BloodType'] }}</td>
+                <td>{{ donor['ContactInfo'] }}</td>
+                <td>{{ donor['Email'] }}</td>
+                <td>
+                    <a href="{{ url_for('edit_donor', id=donor['DonorID']) }}">Edit</a> |
+                    <a href="{{ url_for('delete_donor', id=donor['DonorID']) }}"
+                       onclick="return confirm('Are you sure you want to delete the entry of the donor?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
         </table>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    </section>
+
+    <section class="all-hospitals">
+        <h2>All Hospitals</h2>
+        <a href="{{ url_for('add_hospital') }}" class="btn">Add New Hospital</a>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Contact</th>
+                <th>Type</th>
+                <th>Actions</th>
+            </tr>
+            {% for hospital in hospitals %}
+            <tr>
+                <td>{{ hospital['HospitalID'] }}</td>
+                <td>{{ hospital['Name'] }}</td>
+                <td>{{ hospital['Location'] }}</td>
+                <td>{{ hospital['ContactInfo'] }}</td>
+                <td>{{ hospital['HospitalType'] }}</td>
+                <td>
+                    <a href="{{ url_for('edit_hospital', id=hospital['HospitalID']) }}">Edit</a> |
+                    <a href="{{ url_for('delete_hospital', id=hospital['HospitalID']) }}"
+                       onclick="return confirm('Are you sure you to delete hospital entry?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </section>
+
+    <section class="all-donations">
+        <h2>All Donations</h2>
+        <table>
+            <tr>
+                <th>Donation ID</th>
+                <th>Donor ID</th>
+                <th>Hospital ID</th>
+                <th>Donation Date</th>
+                <th>Blood Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            {% for donation in donations %}
+            <tr>
+                <td>{{ donation['DonationID'] }}</td>
+                <td>{{ donation['DonorID'] }}</td>
+                <td>{{ donation['HospitalID'] }}</td>
+                <td>{{ donation['DonationDate'] }}</td>
+                <td>{{ donation['BloodType'] }}</td>
+                <td>{{ donation['Status'] }}</td>
+                <td>
+                    <a href="{{ url_for('edit_donation', id=donation['DonationID']) }}">Edit</a> |
+                    <a href="{{ url_for('delete_donation', id=donation['DonationID']) }}"
+                       onclick="return confirm('Are you sure you want to delete?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </section>
+
+    <section class="all-blood-requests">
+        <h2>All Blood Requests</h2>
+        <table>
+            <tr>
+                <th>Request ID</th>
+                <th>Hospital ID</th>
+                <th>Blood Type</th>
+                <th>Quantity</th>
+                <th>Request Date</th>
+                <th>Actions</th>
+            </tr>
+            {% for request in blood_requests %}
+            <tr>
+                <td>{{ request['RequestID'] }}</td>
+                <td>{{ request['HospitalID'] }}</td>
+                <td>{{ request['BloodType'] }}</td>
+                <td>{{ request['Quantity'] }}</td>
+                <td>{{ request['RequestDate'] }}</td>
+                <td>
+                    <a href="{{ url_for('edit_blood_request', id=request['RequestID']) }}">Edit</a> |
+                    <a href="{{ url_for('delete_blood_request', id=request['RequestID']) }}"
+                       onclick="return confirm('Are you sure you want to delete?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </section>
+
+    <section class="reports">
+        <h2>Generate Reports</h2>
+        <h3>System Summary</h3>
+        <p><strong>Total Donors:</strong> {{ summary.total_donors }}</p>
+        <p><strong>Total Hospitals:</strong> {{ summary.total_hospitals }}</p>
+        <p><strong>Total Donations:</strong> {{ summary.total_donations }}</p>
+        <p><strong>Total Blood Requests:</strong> {{ summary.total_blood_requests }}</p>
+
+        <h3>Donors by Blood Type</h3>
+        <table>
+            <tr>
+                <th>Blood Type</th>
+                <th>Count</th>
+            </tr>
+            {% for blood_type, count in donors_by_blood_type.items() %}
+            <tr>
+                <td>{{ blood_type }}</td>
+                <td>{{ count }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3>Donations per Hospital</h3>
+        <table>
+            <tr>
+                <th>Hospital Name</th>
+                <th>Donation Count</th>
+            </tr>
+            {% for hospital, count in donations_per_hospital %}
+            <tr>
+                <td>{{ hospital }}</td>
+                <td>{{ count }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3>Download Reports</h3>
+        <a href="{{ url_for('download_donations_report') }}" class="btn">Download All Donations (CSV)</a>
+    </section>
+</div>
+{% endblock %}

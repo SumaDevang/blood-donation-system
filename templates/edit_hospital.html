@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Edit Hospital</h1>
+    <form method="POST" action="{{ url_for('edit_hospital', id=hospital['HospitalID']) }}">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" value="{{ hospital['Name'] }}" required><br>
+
+        <label for="location">Location:</label>
+        <input type="text" name="location" id="location" value="{{ hospital['Location'] }}" required><br>
+
+        <label for="contact_info">Contact Info:</label>
+        <input type="text" name="contact_info" id="contact_info" value="{{ hospital['ContactInfo'] }}" required><br>
+
+        <label for="hospital_type">Hospital Type:</label>
+        <select name="hospital_type" id="hospital_type" required>
+            <option value="Public" {% if hospital['HospitalType'] == 'Public' %}selected{% endif %}>Public</option>
+            <option value="Private" {% if hospital['HospitalType'] == 'Private' %}selected{% endif %}>Private</option>
+            <option value="Military" {% if hospital['HospitalType'] == 'Military' %}selected{% endif %}>Military</option>
+            <option value="Other" {% if hospital['HospitalType'] == 'Other' %}selected{% endif %}>Other</option>
+        </select><br>
+
+        <button type="submit" class="btn">Update Hospital</button>
+    </form>
+</div>
+{% endblock %}

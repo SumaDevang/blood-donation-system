@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Edit Blood Request</h1>
+    <form method="POST" action="{{ url_for('edit_blood_request', id=request['RequestID']) }}">
+        <label for="hospital_id">Hospital ID:</label>
+        <input type="number" name="hospital_id" id="hospital_id" value="{{ request['HospitalID'] }}" required><br>
+
+        <label for="blood_type">Blood Type:</label>
+        <select name="blood_type" id="blood_type" required>
+            <option value="A+" {% if request['BloodType'] == 'A+' %}selected{% endif %}>A+</option>
+            <option value="A-" {% if request['BloodType'] == 'A-' %}selected{% endif %}>A-</option>
+            <option value="B+" {% if request['BloodType'] == 'B+' %}selected{% endif %}>B+</option>
+            <option value="B-" {% if request['BloodType'] == 'B-' %}selected{% endif %}>B-</option>
+            <option value="AB+" {% if request['BloodType'] == 'AB+' %}selected{% endif %}>AB+</option>
+            <option value="AB-" {% if request['BloodType'] == 'AB-' %}selected{% endif %}>AB-</option>
+            <option value="O+" {% if request['BloodType'] == 'O+' %}selected{% endif %}>O+</option>
+            <option value="O-" {% if request['BloodType'] == 'O-' %}selected{% endif %}>O-</option>
+        </select><br>
+
+        <label for="quantity">Quantity (Units):</label>
+        <input type="number" name="quantity" id="quantity" value="{{ request['Quantity'] }}" min="1" required><br>
+
+        <label for="request_date">Request Date:</label>
+        <input type="date" name="request_date" id="request_date" value="{{ request['RequestDate'] }}" required><br>
+
+        <button type="submit" class="btn">Update Blood Request</button>
+    </form>
+</div>
+{% endblock %}

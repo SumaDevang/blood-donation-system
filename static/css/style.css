@@ -186,3 +186,24 @@ th {
     padding: 10px;
     border-radius: 5px;
 }
+
+/* Existing styles */
+.all-donors, .all-hospitals, .all-donations, .all-blood-requests, .reports {
+    margin-bottom: 30px;
+}
+
+.reports h3 {
+    font-size: 1.5em;
+    color: #d32f2f;
+    margin-top: 20px;
+}
+
+.reports p {
+    font-size: 1.1em;
+    color: #333;
+}
+
+.reports table {
+    margin-top: 10px;
+    width: 50%;
+}

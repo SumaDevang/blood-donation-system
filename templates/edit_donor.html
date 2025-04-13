@@ -1,10 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Edit Donor</h1>
+    <form method="POST" action="{{ url_for('edit_donor', id=donor['DonorID']) }}" id="donorForm">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" value="{{ donor['Name'] }}" required><br>
 
-</body>
-</html>
+        <label for="dob">Date of Birth:</label>
+        <input type="date" name="dob" id="dob" value="{{ donor['DateOfBirth'] }}" required><br>
+
+        <label for="blood_type">Blood Type:</label>
+        <select name="blood_type" id="blood_type" required>
+            <option value="A+" {% if donor['BloodType'] == 'A+' %}selected{% endif %}>A+</option>
+            <option value="A-" {% if donor['BloodType'] == 'A-' %}selected{% endif %}>A-</option>
+            <option value="B+" {% if donor['BloodType'] == 'B+' %}selected{% endif %}>B+</option>
+            <option value="B-" {% if donor['BloodType'] == 'B-' %}selected{% endif %}>B-</option>
+            <option value="AB+" {% if donor['BloodType'] == 'AB+' %}selected{% endif %}>AB+</option>
+            <option value="AB-" {% if donor['BloodType'] == 'AB-' %}selected{% endif %}>AB-</option>
+            <option value="O+" {% if donor['BloodType'] == 'O+' %}selected{% endif %}>O+</option>
+            <option value="O-" {% if donor['BloodType'] == 'O-' %}selected{% endif %}>O-</option>
+        </select><br>
+
+        <label for="contact">Contact Info:</label>
+        <input type="text" name="contact" id="contact" value="{{ donor['ContactInfo'] }}" required><br>
+
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" value="{{ donor['Email'] }}" required><br>
+
+        <label for="last_donation">Last Donation Date (Optional):</label>
+        <input type="date" name="last_donation" id="last_donation" value="{{ donor['LastDonationDate'] or '' }}"><br>
+
+        <button type="submit" class="btn">Update Donor</button>
+    </form>
+</div>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}

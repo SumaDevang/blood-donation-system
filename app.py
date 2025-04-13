@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, g
+import csv
+from flask import Flask, render_template, request, redirect, url_for, g, Response
 import sqlite3
+from collections import defaultdict
 
 # Initialize the Flask app
 app = Flask(__name__)
@@ -12,7 +14,7 @@ DATABASE = 'database.db'
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE, timeout=10)  # Set timeout to 10 seconds
+        db = g._database = sqlite3.connect(DATABASE, timeout=10)
         db.row_factory = sqlite3.Row
     return db
 
@@ -255,9 +257,160 @@ def delete_blood_request(request_id):
 @app.route('/admin')
 def admin_dashboard():
     conn = get_db()
+    donors = conn.execute('SELECT * FROM Donors').fetchall()
+    hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
     donations = conn.execute('SELECT * FROM Donations').fetchall()
-    return render_template('admin_dashboard.html', donations=donations)
+    blood_requests = conn.execute('SELECT * FROM BloodRequests').fetchall()
 
+    # System Summary
+    summary = {
+        'total_donors': len(donors),
+        'total_hospitals': len(hospitals),
+        'total_donations': len(donations),
+        'total_blood_requests': len(blood_requests)
+    }
+
+    # Donors by Blood Type
+    donors_by_blood_type = defaultdict(int)
+    for donor in donors:
+        donors_by_blood_type[donor['BloodType']] += 1
+
+    # Donations per Hospital
+    donations_per_hospital = conn.execute('''
+        SELECT Hospitals.Name, COUNT(Donations.DonationID) as DonationCount
+        FROM Hospitals
+        LEFT JOIN Donations ON Hospitals.HospitalID = Donations.HospitalID
+        GROUP BY Hospitals.HospitalID, Hospitals.Name
+    ''').fetchall()
+
+    return render_template('admin_dashboard.html', donors=donors, hospitals=hospitals,
+                          donations=donations, blood_requests=blood_requests,
+                          summary=summary, donors_by_blood_type=donors_by_blood_type,
+                          donations_per_hospital=donations_per_hospital)
+
+
+# Add Hospital
+@app.route('/hospital/add', methods=['GET', 'POST'])
+def add_hospital():
+    if request.method == 'POST':
+        name = request.form['name']
+        location = request.form['location']
+        contact_info = request.form['contact_info']
+        hospital_type = request.form['hospital_type']
+        conn = get_db()
+        try:
+            conn.execute('INSERT INTO Hospitals (Name, Location, ContactInfo, HospitalType) VALUES (?, ?, ?, ?)',
+                         (name, location, contact_info, hospital_type))
+            conn.commit()
+        except sqlite3.OperationalError as e:
+            return f"Database error: {e}", 500
+        return redirect(url_for('admin_dashboard'))
+    return render_template('add_hospital.html')
+
+# Edit Hospital
+@app.route('/hospital/edit/<int:id>', methods=['GET', 'POST'])
+def edit_hospital(id):
+    conn = get_db()
+    hospital = conn.execute('SELECT * FROM Hospitals WHERE HospitalID = ?', (id,)).fetchone()
+    if request.method == 'POST':
+        name = request.form['name']
+        location = request.form['location']
+        contact_info = request.form['contact_info']
+        hospital_type = request.form['hospital_type']
+        try:
+            conn.execute('UPDATE Hospitals SET Name = ?, Location = ?, ContactInfo = ?, HospitalType = ? WHERE HospitalID = ?',
+                         (name, location, contact_info, hospital_type, id))
+            conn.commit()
+        except sqlite3.OperationalError as e:
+            return f"Database error: {e}", 500
+        return redirect(url_for('admin_dashboard'))
+    return render_template('edit_hospital.html', hospital=hospital)
+
+# Delete Hospital
+@app.route('/hospital/delete/<int:id>')
+def delete_hospital(id):
+    conn = get_db()
+    try:
+        conn.execute('DELETE FROM Hospitals WHERE HospitalID = ?', (id,))
+        conn.commit()
+    except sqlite3.OperationalError as e:
+        return f"Database error: {e}", 500
+    return redirect(url_for('admin_dashboard'))
+
+
+# Edit Donation
+@app.route('/donation/edit/<int:id>', methods=['GET', 'POST'])
+def edit_donation(id):
+    conn = get_db()
+    donation = conn.execute('SELECT * FROM Donations WHERE DonationID = ?', (id,)).fetchone()
+    if request.method == 'POST':
+        donor_id = request.form['donor_id']
+        hospital_id = request.form['hospital_id']
+        donation_date = request.form['donation_date']
+        blood_type = request.form['blood_type']
+        status = request.form['status']
+        try:
+            conn.execute('UPDATE Donations SET DonorID = ?, HospitalID = ?, DonationDate = ?, BloodType = ?, Status = ? WHERE DonationID = ?',
+                         (donor_id, hospital_id, donation_date, blood_type, status, id))
+            conn.commit()
+        except sqlite3.OperationalError as e:
+            return f"Database error: {e}", 500
+        return redirect(url_for('admin_dashboard'))
+    return render_template('edit_donation.html', donation=donation)
+
+# Delete Donation
+@app.route('/donation/delete/<int:id>')
+def delete_donation(id):
+    conn = get_db()
+    try:
+        conn.execute('DELETE FROM Donations WHERE DonationID = ?', (id,))
+        conn.commit()
+    except sqlite3.OperationalError as e:
+        return f"Database error: {e}", 500
+    return redirect(url_for('admin_dashboard'))
+
+
+# Edit Blood Request
+@app.route('/blood-request/edit/<int:id>', methods=['GET', 'POST'])
+def edit_blood_request(id):
+    conn = get_db()
+    request_data = conn.execute('SELECT * FROM BloodRequests WHERE RequestID = ?', (id,)).fetchone()
+    if request.method == 'POST':
+        hospital_id = request.form['hospital_id']
+        blood_type = request.form['blood_type']
+        quantity = request.form['quantity']
+        request_date = request.form['request_date']
+        try:
+            conn.execute(
+                'UPDATE BloodRequests SET HospitalID = ?, BloodType = ?, Quantity = ?, RequestDate = ? WHERE RequestID = ?',
+                (hospital_id, blood_type, quantity, request_date, id))
+            conn.commit()
+        except sqlite3.OperationalError as e:
+            return f"Database error: {e}", 500
+        return redirect(url_for('admin_dashboard'))
+    return render_template('edit_blood_request.html', request=request_data)
+
+
+# Download Donations Report
+@app.route('/download-donations-report')
+def download_donations_report():
+    conn = get_db()
+    donations = conn.execute('SELECT * FROM Donations').fetchall()
+
+    # Create CSV content
+    output = []
+    output.append(','.join(['DonationID', 'DonorID', 'HospitalID', 'DonationDate', 'BloodType', 'Status']))
+    for donation in donations:
+        output.append(','.join([str(donation['DonationID']), str(donation['DonorID']),
+                                str(donation['HospitalID']), donation['DonationDate'],
+                                donation['BloodType'], donation['Status']]))
+
+    # Return CSV as a downloadable file
+    return Response(
+        '\n'.join(output),
+        mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment;filename=donations_report.csv'}
+    )
 
 # CRUD: Create Donor
 @app.route('/donor/add', methods=['GET', 'POST'])
@@ -300,7 +453,7 @@ def edit_donor(id):
             conn.commit()
         except sqlite3.OperationalError as e:
             return f"Database error: {e}", 500
-        return redirect(url_for('donor_dashboard'))
+        return redirect(url_for('admin_dashboard'))
     return render_template('edit_donor.html', donor=donor)
 
 
@@ -313,7 +466,7 @@ def delete_donor(id):
         conn.commit()
     except sqlite3.OperationalError as e:
         return f"Database error: {e}", 500
-    return redirect(url_for('donor_dashboard'))
+    return redirect(url_for('admin_dashboard'))
 
 
 # Predefined Query: Scheduled Donations

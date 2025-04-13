@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Edit Donation</h1>
+    <form method="POST" action="{{ url_for('edit_donation', id=donation['DonationID']) }}">
+        <label for="donor_id">Donor ID:</label>
+        <input type="number" name="donor_id" id="donor_id" value="{{ donation['DonorID'] }}" required><br>
+
+        <label for="hospital_id">Hospital ID:</label>
+        <input type="number" name="hospital_id" id="hospital_id" value="{{ donation['HospitalID'] }}" required><br>
+
+        <label for="donation_date">Donation Date:</label>
+        <input type="date" name="donation_date" id="donation_date" value="{{ donation['DonationDate'] }}" required><br>
+
+        <label for="blood_type">Blood Type:</label>
+        <select name="blood_type" id="blood_type" required>
+            <option value="A+" {% if donation['BloodType'] == 'A+' %}selected{% endif %}>A+</option>
+            <option value="A-" {% if donation['BloodType'] == 'A-' %}selected{% endif %}>A-</option>
+            <option value="B+" {% if donation['BloodType'] == 'B+' %}selected{% endif %}>B+</option>
+            <option value="B-" {% if donation['BloodType'] == 'B-' %}selected{% endif %}>B-</option>
+            <option value="AB+" {% if donation['BloodType'] == 'AB+' %}selected{% endif %}>AB+</option>
+            <option value="AB-" {% if donation['BloodType'] == 'AB-' %}selected{% endif %}>AB-</option>
+            <option value="O+" {% if donation['BloodType'] == 'O+' %}selected{% endif %}>O+</option>
+            <option value="O-" {% if donation['BloodType'] == 'O-' %}selected{% endif %}>O-</option>
+        </select><br>
+
+        <label for="status">Status:</label>
+        <select name="status" id="status" required>
+            <option value="Completed" {% if donation['Status'] == 'Completed' %}selected{% endif %}>Completed</option>
+            <option value="Scheduled" {% if donation['Status'] == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+        </select><br>
+
+        <button type="submit" class="btn">Update Donation</button>
+    </form>
+</div>
+{% endblock %}
