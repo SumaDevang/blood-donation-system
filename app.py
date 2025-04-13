@@ -51,12 +51,13 @@ def donate_blood():
                              (name, dob, blood_type, contact, email, last_donation))
                 conn.commit()
                 return render_template('donate_blood.html', active_page='donate_blood',
-                                      success="Donor registered successfully! Please use the Donor Dashboard to schedule donations.")
+                                      success="Donor registered successfully! Please use the Donor Dashboard to manage your donations.")
             except sqlite3.OperationalError as e:
                 return render_template('donate_blood.html', active_page='donate_blood',
                                       error=f"Database error: {e}"), 500
 
     return render_template('donate_blood.html', active_page='donate_blood')
+
 
 
 # Donor Dashboard
@@ -248,7 +249,7 @@ def admin_dashboard():
     summary = {
         'total_donors': len(donors),
         'total_hospitals': len(hospitals),
-        'total_donations': len(donations),
+        'total_donations': conn.execute("SELECT COUNT(*) FROM Donations WHERE Status = 'Completed'").fetchone()[0],
         'total_blood_requests': len(blood_requests)
     }
 
@@ -257,11 +258,11 @@ def admin_dashboard():
     for donor in donors:
         donors_by_blood_type[donor['BloodType']] += 1
 
-    # Donations per Hospital
+    # Donations per Hospital (only Completed donations)
     donations_per_hospital = conn.execute('''
         SELECT Hospitals.Name, COUNT(Donations.DonationID) as DonationCount
         FROM Hospitals
-        LEFT JOIN Donations ON Hospitals.HospitalID = Donations.HospitalID
+        LEFT JOIN Donations ON Hospitals.HospitalID = Donations.HospitalID AND Donations.Status = 'Completed'
         GROUP BY Hospitals.HospitalID, Hospitals.Name
     ''').fetchall()
 

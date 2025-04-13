@@ -8,7 +8,7 @@
 <body>
     <nav>
         <a href="{{ url_for('index') }}" {% if active_page == 'index' %}class="active"{% endif %}>Home</a>
-        <a href="{{ url_for('donate_blood') }}" {% if active_page == 'donate_blood' %}class="active"{% endif %}>Donate Blood</a>
+        <a href="{{ url_for('donate_blood') }}" {% if active_page == 'donate_blood' %}class="active"{% endif %}>Donor Registration</a>
         <a href="{{ url_for('biomedical_services') }}" {% if active_page == 'biomedical_services' %}class="active"{% endif %}>Biomedical Services</a>
         <div class="dropdown">
             <span class="dropdown-label">Dashboards</span>
