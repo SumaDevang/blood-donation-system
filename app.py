@@ -129,8 +129,6 @@ def cancel_appointment(donation_id):
         return f"Database error: {e}", 500
     return redirect(url_for('donor_dashboard'))
 
-
-# Hospital Dashboard
 # Hospital Dashboard
 @app.route('/hospital', methods=['GET', 'POST'])
 def hospital_dashboard():
@@ -141,66 +139,79 @@ def hospital_dashboard():
     scheduled_donations = None
     donors_by_blood_type = None
     blood_type_searched = None
+    success = None
+    error = None
+
+    # Check if hospital_id is passed as a query parameter (for redirects)
+    hospital_id = request.args.get('hospital_id') or request.form.get('hospital_id')
+    if hospital_id:
+        selected_hospital = conn.execute('SELECT * FROM Hospitals WHERE HospitalID = ?', (hospital_id,)).fetchone()
+        if selected_hospital:
+            # Fetch blood requests for the selected hospital
+            blood_requests = conn.execute('SELECT * FROM BloodRequests WHERE HospitalID = ?', (hospital_id,)).fetchall()
+
+            # Fetch scheduled donations for the selected hospital
+            scheduled_donations = conn.execute('''
+                SELECT Donations.*, Donors.Name AS DonorName
+                FROM Donations
+                JOIN Donors ON Donations.DonorID = Donors.DonorID
+                WHERE Donations.HospitalID = ? AND Donations.Status = 'Scheduled'
+            ''', (hospital_id,)).fetchall()
 
     if request.method == 'POST':
-        hospital_id = request.form.get('hospital_id')
-        selected_hospital = conn.execute('SELECT * FROM Hospitals WHERE HospitalID = ?', (hospital_id,)).fetchone()
-
-        if not selected_hospital:
-            return render_template('hospital_dashboard.html', hospitals=hospitals,
-                                   error="Hospital not found."), 400
-
-        # Fetch blood requests for the selected hospital
-        blood_requests = conn.execute('SELECT * FROM BloodRequests WHERE HospitalID = ?', (hospital_id,)).fetchall()
-
-        # Fetch scheduled donations for the selected hospital
-        scheduled_donations = conn.execute('''
-            SELECT Donations.*, Donors.Name AS DonorName
-            FROM Donations
-            JOIN Donors ON Donations.DonorID = Donors.DonorID
-            WHERE Donations.HospitalID = ? AND Donations.Status = 'Scheduled'
-        ''', (hospital_id,)).fetchall()
-
         form_type = request.form.get('form_type')
 
         # Handle Blood Request Form
         if form_type == 'request':
+            hospital_id = request.form['hospital_id']
             blood_type = request.form['blood_type']
             quantity = request.form['quantity']
             request_date = request.form['request_date']
             try:
-                conn.execute(
-                    'INSERT INTO BloodRequests (HospitalID, BloodType, Quantity, RequestDate) VALUES (?, ?, ?, ?)',
-                    (hospital_id, blood_type, quantity, request_date))
+                conn.execute('INSERT INTO BloodRequests (HospitalID, BloodType, Quantity, RequestDate) VALUES (?, ?, ?, ?)',
+                             (hospital_id, blood_type, quantity, request_date))
                 conn.commit()
+                # Redirect with hospital_id to refresh the page with updated data
+                return redirect(url_for('hospital_dashboard', hospital_id=hospital_id, success="Blood request added successfully!"))
             except sqlite3.OperationalError as e:
-                return render_template('hospital_dashboard.html', hospitals=hospitals,
-                                       selected_hospital=selected_hospital,
-                                       blood_requests=blood_requests, scheduled_donations=scheduled_donations,
-                                       error=f"Database error: {e}"), 500
+                return render_template('hospital_dashboard.html', hospitals=hospitals, selected_hospital=selected_hospital,
+                                      blood_requests=blood_requests, scheduled_donations=scheduled_donations,
+                                      error=f"Database error: {e}"), 500
 
         # Handle Donor Search by Blood Type
         elif form_type == 'search_donors':
+            hospital_id = request.form['hospital_id']
             blood_type_searched = request.form['blood_type']
-            donors_by_blood_type = conn.execute('SELECT * FROM Donors WHERE BloodType = ?',
-                                                (blood_type_searched,)).fetchall()
+            donors_by_blood_type = conn.execute('SELECT * FROM Donors WHERE BloodType = ?', (blood_type_searched,)).fetchall()
+            # Re-render with the selected hospital data
+            return render_template('hospital_dashboard.html', hospitals=hospitals, selected_hospital=selected_hospital,
+                                  blood_requests=blood_requests, scheduled_donations=scheduled_donations,
+                                  donors_by_blood_type=donors_by_blood_type, blood_type_searched=blood_type_searched)
+
+    # Get success message from query parameter (if any)
+    success = request.args.get('success')
+    error = request.args.get('error')
 
     return render_template('hospital_dashboard.html', hospitals=hospitals, selected_hospital=selected_hospital,
-                           blood_requests=blood_requests, scheduled_donations=scheduled_donations,
-                           donors_by_blood_type=donors_by_blood_type, blood_type_searched=blood_type_searched)
-
+                          blood_requests=blood_requests, scheduled_donations=scheduled_donations,
+                          donors_by_blood_type=donors_by_blood_type, blood_type_searched=blood_type_searched,
+                          success=success, error=error)
 
 # Delete Blood Request
 @app.route('/hospital/delete-request/<int:request_id>')
 def delete_blood_request(request_id):
     conn = get_db()
+    # Get the hospital_id of the request to redirect back to the same hospital
+    request = conn.execute('SELECT HospitalID FROM BloodRequests WHERE RequestID = ?', (request_id,)).fetchone()
+    if not request:
+        return "Blood request not found.", 404
+    hospital_id = request['HospitalID']
     try:
         conn.execute('DELETE FROM BloodRequests WHERE RequestID = ?', (request_id,))
         conn.commit()
     except sqlite3.OperationalError as e:
-        return f"Database error: {e}", 500
-    return redirect(url_for('hospital_dashboard'))
-
+        return redirect(url_for('hospital_dashboard', hospital_id=hospital_id, error=f"Database error: {e}"))
+    return redirect(url_for('hospital_dashboard', hospital_id=hospital_id, success="Blood request deleted successfully!"))
 
 # Admin Dashboard
 @app.route('/admin')

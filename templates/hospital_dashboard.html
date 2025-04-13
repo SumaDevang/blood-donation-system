@@ -4,14 +4,23 @@
     <h1>Hospital Dashboard</h1>
     <p class="subtitle">Manage blood requests, track donation schedules, and access donor information.</p>
 
+    {% if success %}
+        <p class="success">{{ success }}</p>
+    {% endif %}
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
     <section class="hospital-lookup">
         <h2>Select Your Hospital</h2>
         <form method="POST" action="{{ url_for('hospital_dashboard') }}">
             <label for="hospital_id">Hospital:</label>
             <select name="hospital_id" id="hospital_id" required>
-                <option value="" disabled selected>Select a hospital</option>
+                <option value="" disabled {% if not selected_hospital %}selected{% endif %}>Select a hospital</option>
                 {% for hospital in hospitals %}
-                    <option value="{{ hospital['HospitalID'] }}">{{ hospital['Name'] }} ({{ hospital['Location'] }})</option>
+                    <option value="{{ hospital['HospitalID'] }}" {% if selected_hospital and selected_hospital['HospitalID'] == hospital['HospitalID'] %}selected{% endif %}>
+                        {{ hospital['Name'] }} ({{ hospital['Location'] }})
+                    </option>
                 {% endfor %}
             </select>
             <button type="submit" class="btn">View Details</button>
