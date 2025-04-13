@@ -491,17 +491,6 @@ def eligible_donors():
     return render_template('query_results.html', results=results, title="Eligible Donors")
 
 
-# Predefined Query: Donors by Blood Type
-@app.route('/donors_by_blood_type')
-def donors_by_blood_type():
-    conn = get_db()
-    query = '''
-    SELECT BloodType, COUNT(*) as Count
-    FROM Donors
-    GROUP BY BloodType
-    '''
-    results = conn.execute(query).fetchall()
-    return render_template('query_results.html', results=results, title="Donors by Blood Type")
 
 # Predefined Query: Recent Donations (Last 5 Completed)
 @app.route('/recent_donations')
