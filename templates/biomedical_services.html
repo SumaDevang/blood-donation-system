@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Biomedical Services</h1>
+    <p class="subtitle">Learn about our biomedical services that ensure the safety and availability of donated blood.</p>
 
-</body>
-</html>
+    <section class="biomedical-info">
+        <h2>Our Biomedical Services</h2>
+        <p>
+            At the Blood Donation Management System, our biomedical services team works tirelessly to ensure that every unit of donated blood is safe, properly stored, and ready for use in life-saving medical procedures. Our services include:
+        </p>
+        <ul>
+            <li><strong>Blood Testing:</strong> Every donation is rigorously tested for infectious diseases and blood type compatibility to ensure safety for recipients.</li>
+            <li><strong>Storage and Preservation:</strong> Donated blood is stored under strict temperature-controlled conditions to maintain its viability for up to 42 days.</li>
+            <li><strong>Distribution:</strong> We coordinate with hospitals to distribute blood units based on their specific needs, ensuring timely delivery for emergencies and scheduled procedures.</li>
+            <li><strong>Quality Assurance:</strong> Our team follows strict regulatory guidelines to maintain the highest standards in blood processing and handling.</li>
+        </ul>
+    </section>
+
+    <section class="biomedical-stats">
+        <h2>Blood Donation Statistics</h2>
+        <p><strong>Total Donations:</strong> {{ stats.total_donations }}</p>
+        <p><strong>Total Blood Units Available:</strong> {{ stats.total_units_available }} (based on completed donations)</p>
+    </section>
+</div>
+{% endblock %}

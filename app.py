@@ -507,7 +507,14 @@ def host_blood_drive():
 # Biomedical Services page
 @app.route('/biomedical-services')
 def biomedical_services():
-    return render_template('biomedical_services.html', active_page='biomedical_services')
+    conn = get_db()
+    total_donations = conn.execute('SELECT COUNT(*) FROM Donations').fetchone()[0]
+    total_units_available = conn.execute("SELECT COUNT(*) FROM Donations WHERE Status = 'Completed'").fetchone()[0]
+    stats = {
+        'total_donations': total_donations,
+        'total_units_available': total_units_available
+    }
+    return render_template('biomedical_services.html', active_page='biomedical_services', stats=stats)
 
 
 if __name__ == '__main__':
