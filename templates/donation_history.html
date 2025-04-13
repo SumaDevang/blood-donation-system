@@ -1,10 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "layout.html" %}
+{% block content %}
+<h1>Donation History</h1>
+{% if history %}
+<table>
+    <tr>
+        <th>Donation ID</th>
+        <th>Donor</th>
+        <th>Hospital</th>
+        <th>Donation Date</th>
+        <th>Blood Type</th>
+        <th>Status</th>
+    </tr>
+    {% for donation in history %}
+    <tr>
+        <td>{{ donation['DonationID'] }}</td>
+        <td>{{ donation['DonorName'] }}</td>
+        <td>{{ donation['HospitalName'] }}</td>
+        <td>{{ donation['DonationDate'] }}</td>
+        <td>{{ donation['BloodType'] }}</td>
+        <td>{{ donation['Status'] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No donation history available.</p>
+{% endif %}
+{% endblock %}

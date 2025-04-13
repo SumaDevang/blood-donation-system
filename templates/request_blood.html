@@ -1,10 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Blood Supply</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1580281658626-ee379fecb9a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'); /* Blood bag in hospital */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: #333;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Dark overlay for readability */
+            z-index: 0;
+        }
+        .navbar, .container-main {
+            position: relative;
+            z-index: 1;
+        }
+        .navbar {
+            background-color: #b22222; /* Dark red for blood donation theme */
+            border-bottom: 2px solid #8b1a1a;
+        }
+        .navbar-brand, .nav-link {
+            color: white !important;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .nav-link:hover {
+            color: #ffcccc !important;
+        }
+        .container-main {
+            max-width: 800px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        h1 {
+            color: #b22222;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Blood Donation Management System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('hospital_dashboard') }}">Hospital Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Admin Dashboard</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container-main">
+        <h1>Request Blood Supply</h1>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="hospital_name" class="form-label">Hospital Name</label>
+                <select class="form-select" id="hospital_name" name="hospital_name" required>
+                    <option value="">Select Hospital</option>
+                    {% for hospital in hospitals %}
+                    <option value="{{ hospital }}">{{ hospital }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="blood_type" class="form-label">Blood Type</label>
+                <select class="form-select" id="blood_type" name="blood_type" required>
+                    <option value="">Select Blood Type</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Quantity (Units)</label>
+                <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+            </div>
+            <div class="mb-3">
+                <label for="request_date" class="form-label">Request Date</label>
+                <input type="date" class="form-control" id="request_date" name="request_date" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

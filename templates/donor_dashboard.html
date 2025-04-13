@@ -1,23 +1,70 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>Donor Dashboard</h1>
-<a href="{{ url_for('add_donor') }}">Add New Donor</a>
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Blood Type</th>
-        <th>Contact</th>
-        <th>Email</th>
-    </tr>
-    {% for donor in donors %}
-    <tr>
-        <td>{{ donor['DonorID'] }}</td>
-        <td>{{ donor['Name'] }}</td>
-        <td>{{ donor['BloodType'] }}</td>
-        <td>{{ donor['ContactInfo'] }}</td>
-        <td>{{ donor['Email'] }}</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="container">
+    <h1>Donor Dashboard</h1>
+    <p class="subtitle">View your donation history and manage your upcoming appointments.</p>
+
+    <section class="donor-lookup">
+        <h2>View Your Donation History and Appointments</h2>
+        <form method="POST" action="{{ url_for('donor_dashboard') }}">
+            <label for="donor_email">Enter Your Email:</label>
+            <input type="email" name="donor_email" id="donor_email" required>
+            <button type="submit" class="btn">View My Details</button>
+        </form>
+
+        {% if donor %}
+            <h3>Donor Information</h3>
+            <p><strong>Name:</strong> {{ donor['Name'] }}</p>
+            <p><strong>Email:</strong> {{ donor['Email'] }}</p>
+            <p><strong>Blood Type:</strong> {{ donor['BloodType'] }}</p>
+
+            <h3>Your Donation History</h3>
+            {% if donation_history %}
+                <table>
+                    <tr>
+                        <th>Hospital</th>
+                        <th>Donation Date</th>
+                        <th>Blood Type</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for donation in donation_history %}
+                        <tr>
+                            <td>{{ donation['HospitalName'] }}</td>
+                            <td>{{ donation['DonationDate'] }}</td>
+                            <td>{{ donation['BloodType'] }}</td>
+                            <td>{{ donation['Status'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p>No donation history found.</p>
+            {% endif %}
+
+            <h3>Upcoming Appointments</h3>
+            {% if upcoming_appointments %}
+                <table>
+                    <tr>
+                        <th>Hospital</th>
+                        <th>Donation Date</th>
+                        <th>Blood Type</th>
+                        <th>Action</th>
+                    </tr>
+                    {% for appointment in upcoming_appointments %}
+                        <tr>
+                            <td>{{ appointment['HospitalName'] }}</td>
+                            <td>{{ appointment['DonationDate'] }}</td>
+                            <td>{{ appointment['BloodType'] }}</td>
+                            <td>
+                                <a href="{{ url_for('cancel_appointment', donation_id=appointment['DonationID']) }}"
+                                   onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p>No upcoming appointments found.</p>
+            {% endif %}
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
 <h1>Add New Donor</h1>
-<form method="POST">
-    <label>Name: <input type="text" name="name" required></label><br>
-    <label>Date of Birth: <input type="date" name="dob" required></label><br>
+<form method="POST" id="donorForm">
+    <label>Name: <input type="text" name="name" id="name" required></label><br>
+    <label>Date of Birth: <input type="date" name="dob" id="dob" required></label><br>
     <label>Blood Type:
-        <select name="blood_type" required>
+        <select name="blood_type" id="blood_type" required>
             <option value="A+">A+</option>
             <option value="A-">A-</option>
             <option value="B+">B+</option>
@@ -16,9 +16,10 @@
             <option value="O-">O-</option>
         </select>
     </label><br>
-    <label>Contact Info: <input type="text" name="contact" required></label><br>
-    <label>Email: <input type="email" name="email" required></label><br>
-    <label>Last Donation: <input type="date" name="last_donation"></label><br>
+    <label>Contact Info: <input type="text" name="contact" id="contact" required></label><br>
+    <label>Email: <input type="email" name="email" id="email" required></label><br>
+    <label>Last Donation: <input type="date" name="last_donation" id="last_donation"></label><br>
     <button type="submit">Add Donor</button>
 </form>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}

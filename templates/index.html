@@ -1,7 +1,42 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>Welcome to the Blood Donation Management System</h1>
-<p>Manage donors, hospitals, and donations efficiently.</p>
-<a href="{{ url_for('scheduled_donations') }}">View Scheduled Donations</a>
-<a href="{{ url_for('eligible_donors') }}">View Eligible Donors</a>
+<div class="container">
+    <h1>Blood Donation Management System</h1>
+    <p class="subtitle">Streamlining Blood Donation Processes for Donors, Hospitals, and Administrators</p>
+
+    <section class="overview">
+        <h2>System Overview</h2>
+        <p>
+            The Blood Donation Management System is designed to enhance the coordination and efficiency of blood donation processes.
+            It provides a centralized platform for managing donor information, hospital blood requests, and donation records, ensuring a steady supply of blood for medical needs.
+        </p>
+    </section>
+
+    <section class="roles">
+        <h2>Access by Role</h2>
+        <ul>
+            <li>
+                <strong>Donors:</strong> Register as a donor, schedule donations, view your donation history, and manage upcoming appointments.
+                <br><a href="{{ url_for('donate_blood') }}" class="btn">Donate Blood</a>
+            </li>
+            <li>
+                <strong>Hospitals:</strong> Manage blood requests, track donation schedules, and access donor information based on blood type requirements.
+                <br><a href="{{ url_for('hospital_dashboard') }}" class="btn">Hospital Dashboard</a>
+            </li>
+            <li>
+                <strong>Administrators:</strong> Oversee system operations, manage all data, and generate reports for blood donation activities.
+                <br><a href="{{ url_for('admin_dashboard') }}" class="btn">Admin Dashboard</a>
+            </li>
+        </ul>
+    </section>
+
+    <section class="queries">
+        <h2>Data Insights</h2>
+        <p>Access key information quickly with our predefined queries:</p>
+        <ul>
+            <li><a href="{{ url_for('scheduled_donations') }}">View Scheduled Donations</a></li>
+            <li><a href="{{ url_for('eligible_donors') }}">View Eligible Donors</a></li>
+        </ul>
+    </section>
+</div>
 {% endblock %}

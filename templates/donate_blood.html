@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Donate Blood</h1>
+    <p class="subtitle">Join our community of donors and help save lives by donating blood.</p>
+
+    <section class="donor-registration">
+        <h2>Register as a Donor</h2>
+        <p>If you're a new donor, please register below to join our system.</p>
+        <form method="POST" action="{{ url_for('donate_blood') }}" id="donorForm">
+            <input type="hidden" name="form_type" value="register">
+            <label>Name: <input type="text" name="name" id="name" required></label><br>
+            <label>Date of Birth: <input type="date" name="dob" id="dob" required></label><br>
+            <label>Blood Type:
+                <select name="blood_type" id="blood_type" required>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+            </label><br>
+            <label>Contact Info: <input type="text" name="contact" id="contact" required></label><br>
+            <label>Email: <input type="email" name="email" id="email" required></label><br>
+            <button type="submit">Register as Donor</button>
+        </form>
+    </section>
+
+    <section class="schedule-donation">
+        <h2>Schedule a Donation</h2>
+        <p>Already a donor? Schedule your next blood donation with a hospital.</p>
+        <form method="POST" action="{{ url_for('donate_blood') }}">
+            <input type="hidden" name="form_type" value="schedule">
+            <label>Donor Email:
+                <input type="email" name="donor_email" required>
+            </label><br>
+            <label>Hospital:
+                <select name="hospital_id" required>
+                    <option value="" disabled selected>Select a hospital</option>
+                    {% for hospital in hospitals %}
+                        <option value="{{ hospital['HospitalID'] }}">{{ hospital['Name'] }} ({{ hospital['Location'] }})</option>
+                    {% endfor %}
+                </select>
+            </label><br>
+            <label>Donation Date:
+                <input type="date" name="donation_date" required>
+            </label><br>
+            <button type="submit">Schedule Donation</button>
+        </form>
+    </section>
+
+    <section class="donor-history">
+        <h2>View Your Donation History</h2>
+        <p>To track your past donations and upcoming appointments.</p>
+        <a href="{{ url_for('donor_dashboard') }}" class="btn">Go to Donor Dashboard</a>
+    </section>
+</div>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}

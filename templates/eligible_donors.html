@@ -1,10 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eligible Donors</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-$END$
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Blood Donation Management System</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('donor_dashboard') }}">Donor Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('hospital_dashboard') }}">Hospital Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container-main">
+        <h1>Eligible Donors</h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Donor ID</th>
+                    <th>Name</th>
+                    <th>Blood Type</th>
+                    <th>Contact Info</th>
+                    <th>Last Donation Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donor in donors %}
+                <tr>
+                    <td>{{ donor.donor_id }}</td>
+                    <td>{{ donor.name }}</td>
+                    <td>{{ donor.blood_type }}</td>
+                    <td>{{ donor.contact_info }}</td>
+                    <td>{{ donor.last_donation_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

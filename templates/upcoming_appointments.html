@@ -1,10 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "layout.html" %}
+{% block content %}
+<h1>Upcoming Appointments</h1>
+{% if appointments %}
+<table>
+    <tr>
+        <th>Donor</th>
+        <th>Hospital</th>
+        <th>Donation Date</th>
+        <th>Status</th>
+    </tr>
+    {% for appointment in appointments %}
+    <tr>
+        <td>{{ appointment['Name'] }}</td>
+        <td>{{ appointment['HospitalName'] }}</td>
+        <td>{{ appointment['DonationDate'] }}</td>
+        <td>{{ appointment['Status'] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No upcoming appointments scheduled.</p>
+{% endif %}
+{% endblock %}
