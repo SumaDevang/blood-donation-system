@@ -2,152 +2,99 @@
 {% block content %}
 <div class="container">
     <h1>Hospital Dashboard</h1>
-    <p class="subtitle">Manage blood requests, track donation schedules, and access donor information.</p>
+    <p class="subtitle">Access donor information based on blood type requirements,Manage current blood requests and track donation schedules.</p>
 
     {% if success %}
         <p class="success">{{ success }}</p>
     {% endif %}
-    {% if error %}
-        <p class="error">{{ error }}</p>
-    {% endif %}
 
-    <section class="hospital-lookup">
-        <h2>Select Your Hospital</h2>
-        <form method="POST" action="{{ url_for('hospital_dashboard') }}">
-            <label for="hospital_id">Hospital:</label>
-            <select name="hospital_id" id="hospital_id" required>
-                <option value="" disabled {% if not selected_hospital %}selected{% endif %}>Select a hospital</option>
-                {% for hospital in hospitals %}
-                    <option value="{{ hospital['HospitalID'] }}" {% if selected_hospital and selected_hospital['HospitalID'] == hospital['HospitalID'] %}selected{% endif %}>
-                        {{ hospital['Name'] }} ({{ hospital['Location'] }})
-                    </option>
-                {% endfor %}
+    <section class="donor-search">
+        <h2>Search Donors by Blood Type</h2>
+        <form method="POST" action="{{ url_for('search_donors_by_blood_type') }}">
+            <label for="blood_type">Blood Type:</label>
+            <select name="blood_type" id="blood_type" required>
+                <option value="" disabled selected>Select Blood Type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
             </select>
-            <button type="submit" class="btn">View Details</button>
+            <button type="submit" class="btn">Search Donors</button>
         </form>
+
+        {% if donors is defined and donors %}
+            <h3>Donors with Blood Type {{ searched_blood_type }}</h3>
+            <table>
+                <tr>
+                    <th>Donor ID</th>
+                    <th>Name</th>
+                    <th>Blood Type</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Eligibility Status</th>
+                </tr>
+                {% for donor in donors %}
+                <tr>
+                    <td>{{ donor['DonorID'] }}</td>
+                    <td>{{ donor['Name'] }}</td>
+                    <td>{{ donor['BloodType'] }}</td>
+                    <td>{{ donor['ContactInfo'] }}</td>
+                    <td>{{ donor['Email'] }}</td>
+                    <td>{{ donor['EligibilityStatus'] if donor['EligibilityStatus'] else 'Not Checked' }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
     </section>
 
-    {% if selected_hospital %}
-        <section class="blood-requests">
-            <h2>Manage Blood Requests for {{ selected_hospital['Name'] }}</h2>
-            <h3>Create a Blood Request</h3>
-            <form method="POST" action="{{ url_for('hospital_dashboard') }}">
-                <input type="hidden" name="form_type" value="request">
-                <input type="hidden" name="hospital_id" value="{{ selected_hospital['HospitalID'] }}">
-                <label for="blood_type">Blood Type:</label>
-                <select name="blood_type" id="blood_type" required>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                </select><br>
+    <section class="blood-requests">
+        <h2>Current Blood Requests</h2>
+        <a href="{{ url_for('request_blood') }}" class="btn">Request Blood</a>
+        <table>
+            <tr>
+                <th>Request ID</th>
+                <th>Hospital ID</th>
+                <th>Blood Type</th>
+                <th>Quantity</th>
+                <th>Request Date</th>
+            </tr>
+            {% for request in blood_requests %}
+            <tr>
+                <td>{{ request['RequestID'] }}</td>
+                <td>{{ request['HospitalID'] }}</td>
+                <td>{{ request['BloodType'] }}</td>
+                <td>{{ request['Quantity'] }}</td>
+                <td>{{ request['RequestDate'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </section>
 
-                <label for="quantity">Quantity (Units):</label>
-                <input type="number" name="quantity" id="quantity" min="1" required><br>
-
-                <label for="request_date">Request Date:</label>
-                <input type="date" name="request_date" id="request_date" required><br>
-
-                <button type="submit" class="btn">Submit Request</button>
-            </form>
-
-            <h3>Current Blood Requests</h3>
-            {% if blood_requests %}
-                <table>
-                    <tr>
-                        <th>Request ID</th>
-                        <th>Blood Type</th>
-                        <th>Quantity</th>
-                        <th>Request Date</th>
-                        <th>Action</th>
-                    </tr>
-                    {% for request in blood_requests %}
-                        <tr>
-                            <td>{{ request['RequestID'] }}</td>
-                            <td>{{ request['BloodType'] }}</td>
-                            <td>{{ request['Quantity'] }}</td>
-                            <td>{{ request['RequestDate'] }}</td>
-                            <td>
-                                <a href="{{ url_for('delete_blood_request', request_id=request['RequestID']) }}"
-                                   onclick="return confirm('Are you sure you want to delete this request?')">Delete</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% else %}
-                <p>No blood requests found for this hospital.</p>
-            {% endif %}
-        </section>
-
-        <section class="donation-schedules">
-            <h2>Track Donation Schedules for {{ selected_hospital['Name'] }}</h2>
-            {% if scheduled_donations %}
-                <table>
-                    <tr>
-                        <th>Donor Name</th>
-                        <th>Donation Date</th>
-                        <th>Blood Type</th>
-                        <th>Status</th>
-                    </tr>
-                    {% for donation in scheduled_donations %}
-                        <tr>
-                            <td>{{ donation['DonorName'] }}</td>
-                            <td>{{ donation['DonationDate'] }}</td>
-                            <td>{{ donation['BloodType'] }}</td>
-                            <td>{{ donation['Status'] }}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% else %}
-                <p>No scheduled donations found for this hospital.</p>
-            {% endif %}
-        </section>
-
-        <section class="donor-search">
-            <h2>Search Donors by Blood Type</h2>
-            <form method="POST" action="{{ url_for('hospital_dashboard') }}">
-                <input type="hidden" name="form_type" value="search_donors">
-                <input type="hidden" name="hospital_id" value="{{ selected_hospital['HospitalID'] }}">
-                <label for="blood_type_search">Blood Type:</label>
-                <select name="blood_type" id="blood_type_search" required>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                </select>
-                <button type="submit" class="btn">Search Donors</button>
-            </form>
-
-            {% if donors_by_blood_type %}
-                <h3>Donors with Blood Type {{ blood_type_searched }}</h3>
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Blood Type</th>
-                        <th>Contact Info</th>
-                        <th>Email</th>
-                        <th>Last Donation Date</th>
-                    </tr>
-                    {% for donor in donors_by_blood_type %}
-                        <tr>
-                            <td>{{ donor['Name'] }}</td>
-                            <td>{{ donor['BloodType'] }}</td>
-                            <td>{{ donor['ContactInfo'] }}</td>
-                            <td>{{ donor['Email'] }}</td>
-                            <td>{{ donor['LastDonationDate'] or 'N/A' }}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% endif %}
-        </section>
-    {% endif %}
-</div>
+    <section class="donation-schedules">
+        <h2>Donation Schedules</h2>
+        <table>
+            <tr>
+                <th>Donation ID</th>
+                <th>Donor Name</th>
+                <th>Hospital Name</th>
+                <th>Donation Date</th>
+                <th>Blood Type</th>
+                <th>Status</th>
+            </tr>
+            {% for donation in donations %}
+            <tr>
+                <td>{{ donation['DonationID'] }}</td>
+                <td>{{ donation['DonorName'] }}</td>
+                <td>{{ donation['HospitalName'] }}</td>
+                <td>{{ donation['DonationDate'] }}</td>
+                <td>{{ donation['BloodType'] }}</td>
+                <td>{{ donation['Status'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </section>
 {% endblock %}

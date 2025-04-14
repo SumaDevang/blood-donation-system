@@ -2,19 +2,24 @@
 {% block content %}
 <div class="container">
     <h1>{{ title }}</h1>
-    <table>
-        <tr>
-            {% for key in results[0].keys() %}
-            <th>{{ key }}</th>
+    {% if results %}
+        <table>
+            <tr>
+                {% for key in results[0].keys() %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+            </tr>
+            {% for row in results %}
+            <tr>
+                {% for key in row.keys() %}
+                    <td>{{ row[key] }}</td>
+                {% endfor %}
+            </tr>
             {% endfor %}
-        </tr>
-        {% for row in results %}
-        <tr>
-            {% for key in row.keys() %}
-            <td>{{ row[key] }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
+        </table>
+    {% else %}
+        <p>No results found.</p>
+    {% endif %}
+    <p><a href="{{ url_for('insights') }}" class="btn">Back to Insights</a></p>
 </div>
 {% endblock %}

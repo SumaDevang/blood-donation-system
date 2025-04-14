@@ -18,7 +18,7 @@
                 <a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
             </div>
         </div>
-
+        <a href="{{ url_for('insights') }}" {% if active_page == 'insights' %}class="active"{% endif %}>Data Insights</a>
         <a href="{{ url_for('biomedical_services') }}" {% if active_page == 'biomedical_services' %}class="active"{% endif %}>Biomedical Services</a>
     </nav>
     {% block content %}

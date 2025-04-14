@@ -313,3 +313,73 @@ nav a.active::after {
     display: block;
 }
 
+/* Data Insights Page */
+.data-insights {
+    margin-top: 20px;
+}
+
+.data-insights details {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.data-insights summary {
+    cursor: pointer;
+    padding: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+}
+
+.data-insights summary h3 {
+    display: inline;
+    margin: 0;
+}
+
+.data-insights .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    padding: 15px;
+}
+
+.data-insights .insights-item {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.data-insights .insights-item a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.data-insights .insights-item a:hover {
+    text-decoration: underline;
+}
+
+.data-insights .insights-item p {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.data-insights .insights-item form {
+    margin-top: 5px;
+}
+
+.data-insights .insights-item select {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 0.9em;
+    width: 100%;
+    max-width: 200px;
+}
+

@@ -4,6 +4,18 @@
     <h1>Admin Dashboard</h1>
     <p class="subtitle">Oversee system operations, manage all data, and generate reports for blood donation activities.</p>
 
+<script>
+function updateHospitalFormAction() {
+    var form = document.getElementById('hospitalForm');
+    var select = document.getElementById('hospitalSelect');
+    var hospitalName = select.value;
+    if (hospitalName) {
+        // Dynamically build the URL for the selected hospital name
+        form.action = "/donors_for_hospital/" + encodeURIComponent(hospitalName);
+        form.submit();
+    }
+}
+</script>
     <section class="all-donors">
         <h2>All Donors</h2>
         <a href="{{ url_for('add_donor') }}" class="btn">Add New Donor</a>

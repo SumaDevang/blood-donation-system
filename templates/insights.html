@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Data Insights</h1>
+    <p class="subtitle">Access key information quickly with our predefined queries, organized by category:</p>
+
+    <section class="data-insights">
+        <!-- Donor Insights -->
+        <details open>
+            <summary><h3>Donor Insights</h3></summary>
+            <div class="insights-grid">
+                <div class="insights-item">
+                    <a href="{{ url_for('donor_donation_history') }}">Completed Donor Donation History (All Donors)</a>
+                    <p>View the completed donation history for all donors, sorted by date.</p>
+                </div>
+
+                <div class="insights-item">
+                    <a href="{{ url_for('top_donors') }}">Top Donors by Completed Donation Count (Top 5)</a>
+                    <p>Identify the donors who have completed the most donations.</p>
+                </div>
+                <div class="insights-item">
+                    <a href="{{ url_for('donors_never_donated') }}">Donors Who Have Never Donated</a>
+                    <p>List donors who have never made a donation.</p>
+                </div>
+
+                <div class="insights-item">
+                    <a href="{{ url_for('recent_donation_per_donor') }}">Most Recent Completed Donation for Each Donor</a>
+                    <p>Find the latest completed donation date for each donor.</p>
+                </div>
+            </div>
+        </details>
+
+        <!-- Hospital Insights -->
+        <details>
+            <summary><h3>Hospital Insights</h3></summary>
+            <div class="insights-grid">
+                <div class="insights-item">
+                    <a href="{{ url_for('hospitals_with_most_donations') }}">Hospitals with Most Donations (Top 5, Completed Only)</a>
+                    <p>View the top 5 hospitals with the highest number of completed donations.</p>
+                </div>
+                <div class="insights-item">
+                    <a href="{{ url_for('latest_donation_per_hospital') }}">Latest Completed Donation for Each Hospital</a>
+                    <p>View the most recent completed donation received by each hospital.</p>
+                </div>
+                <div class="insights-item">
+                    <span>Donors Who Completed Donations to a Specific Hospital:</span>
+                    <form id="hospitalForm" method="GET" style="display:inline;">
+                        <select name="hospital_name" id="hospitalSelect" onchange="updateHospitalFormAction()">
+                            <option value="" disabled selected>Select a hospital</option>
+                            {% for hospital in hospitals %}
+                                <option value="{{ hospital['Name'] }}">{{ hospital['Name'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    <p>View donors who completed donations to a specific hospital.</p>
+                </div>
+            </div>
+        </details>
+
+        <!-- Donation Insights -->
+        <details>
+            <summary><h3>Donation Insights</h3></summary>
+            <div class="insights-grid">
+                <div class="insights-item">
+                    <a href="{{ url_for('scheduled_donations') }}">View Scheduled Donations</a>
+                    <p>View all scheduled donations with donor and hospital details.</p>
+                </div>
+                <div class="insights-item">
+                    <a href="{{ url_for('recent_donations') }}">Recent Completed Donations</a>
+                    <p>View the 5 most recent completed donations.</p>
+                </div>
+                <div class="insights-item">
+                    <a href="{{ url_for('donations_with_eligibility') }}">All Completed Donations with Donor Eligibility Status</a>
+                    <p>View all completed donations along with the donor's eligibility status.</p>
+                </div>
+            </div>
+        </details>
+
+        <!-- Eligibility Insights -->
+        <details>
+            <summary><h3>Eligibility Insights</h3></summary>
+            <div class="insights-grid">
+                <div class="insights-item">
+                    <a href="{{ url_for('eligible_donors') }}">View Eligible Donors</a>
+                    <p>View all donors currently marked as eligible to donate.</p>
+                </div>
+                <div class="insights-item">
+                    <a href="{{ url_for('eligible_donors_today') }}">Donors Eligible for Donation Today (56-Day Gap)</a>
+                    <p>View donors eligible to donate today, considering a 56-day gap since their last donation.</p>
+                </div>
+            </div>
+        </details>
+    </section>
+</div>
+
+<script>
+function updateHospitalFormAction() {
+    var form = document.getElementById('hospitalForm');
+    var select = document.getElementById('hospitalSelect');
+    var hospitalName = select.value;
+    if (hospitalName) {
+        form.action = "/donors_for_hospital/" + encodeURIComponent(hospitalName);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

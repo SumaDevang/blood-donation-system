@@ -141,8 +141,7 @@ def cancel_appointment(donation_id):
                                error=f"Database error: {e}"), 500
     return redirect(url_for('donor_dashboard', success="Appointment canceled successfully!"))
 
-
-# Hospital Dashboard
+# hospital_dashboard
 @app.route('/hospital')
 def hospital_dashboard():
     conn = get_db()
@@ -154,9 +153,37 @@ def hospital_dashboard():
         JOIN Donors ON Donations.DonorID = Donors.DonorID
         JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
     ''').fetchall()
-    return render_template('hospital_dashboard.html', hospitals=hospitals, blood_requests=blood_requests,
-                           donations=donations)
+    success = request.args.get('success')  # Get success message from URL (if any)
+    return render_template('hospital_dashboard.html', hospitals=hospitals, blood_requests=blood_requests, donations=donations)
 
+
+# Hospital Dashboard - Search Donors by Blood Type
+@app.route('/hospital/search-donors', methods=['GET', 'POST'])
+def search_donors_by_blood_type():
+    conn = get_db()
+    hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
+    blood_requests = conn.execute('SELECT * FROM BloodRequests').fetchall()
+    donations = conn.execute('''
+        SELECT Donations.*, Donors.Name AS DonorName, Hospitals.Name AS HospitalName
+        FROM Donations
+        JOIN Donors ON Donations.DonorID = Donors.DonorID
+        JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
+    ''').fetchall()
+
+    donors = []
+    if request.method == 'POST':
+        blood_type = request.form['blood_type']
+        donors = conn.execute('''
+            SELECT Donors.*, DonationEligibility.EligibilityStatus
+            FROM Donors
+            LEFT JOIN DonationEligibility ON Donors.DonorID = DonationEligibility.DonorID
+            WHERE Donors.BloodType = ?
+        ''', (blood_type,)).fetchall()
+        return render_template('hospital_dashboard.html', hospitals=hospitals, blood_requests=blood_requests,
+                               donations=donations, donors=donors, searched_blood_type=blood_type)
+
+    return render_template('hospital_dashboard.html', hospitals=hospitals, blood_requests=blood_requests,
+                           donations=donations, donors=donors)
 
 # Request Blood
 @app.route('/hospital/request-blood', methods=['GET', 'POST'])
@@ -528,7 +555,7 @@ def delete_eligibility(id):
         return f"Database error: {e}", 500
     return redirect(url_for('admin_dashboard'))
 
-
+##################### Predefined Query:#########################
 # Predefined Query: Scheduled Donations
 @app.route('/scheduled_donations')
 def scheduled_donations():
@@ -575,7 +602,51 @@ def recent_donations():
     return render_template('query_results.html', results=results, title="Recent Donations (Last 5 Completed)")
 
 
-# Predefined Query: Hospitals with Most Donations (Top 3)
+# Predefined Query: Donor Donation History (Completed Donations Only)
+@app.route('/donor_donation_history')
+def donor_donation_history():
+    conn = get_db()
+    query = '''
+    SELECT Donors.Name, Donors.BloodType, Donations.DonationDate, Donations.Status 
+    FROM Donors
+    JOIN Donations ON Donors.DonorID = Donations.DonorID
+    WHERE Donations.Status = 'Completed'
+    ORDER BY Donations.DonationDate DESC
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Completed Donor Donation History (All Donors)")
+
+
+# Predefined Query: Donors Who Donated to a Specific Hospital
+@app.route('/donors_for_hospital/<string:hospital_name>')
+def donors_for_hospital(hospital_name):
+    conn = get_db()
+    query = '''
+    SELECT Donors.Name, Donors.BloodType, Donations.DonationDate, Hospitals.Name AS HospitalName
+    FROM Donations
+    JOIN Donors ON Donations.DonorID = Donors.DonorID
+    JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
+    WHERE Hospitals.Name = ?
+    AND Donations.Status = 'Completed'
+    '''
+    results = conn.execute(query, (hospital_name,)).fetchall()
+    return render_template('query_results.html', results=results, title=f"Donors Who Completed Donations to {hospital_name}")
+
+
+# Predefined Query: Most Recent Donation for Each Donor
+@app.route('/recent_donation_per_donor')
+def recent_donation_per_donor():
+    conn = get_db()
+    query = '''
+    SELECT Donors.Name, MAX(Donations.DonationDate) AS LastDonationDate
+    FROM Donors
+    JOIN Donations ON Donors.DonorID = Donations.DonorID
+    GROUP BY Donors.DonorID
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Most Recent Donation for Each Donor")
+
+# Update Existing Route: Hospitals with Most Donations (Change LIMIT to 5)
 @app.route('/hospitals_with_most_donations')
 def hospitals_with_most_donations():
     conn = get_db()
@@ -585,47 +656,114 @@ def hospitals_with_most_donations():
     LEFT JOIN Donations ON Hospitals.HospitalID = Donations.HospitalID
     GROUP BY Hospitals.HospitalID, Hospitals.Name
     ORDER BY DonationCount DESC
-    LIMIT 3
+    LIMIT 5
     '''
     results = conn.execute(query).fetchall()
-    return render_template('query_results.html', results=results, title="Hospitals with Most Donations (Top 3)")
+    return render_template('query_results.html', results=results, title="Hospitals with Most Donations (Top 5)")
 
+# Predefined Query: Donors Who Have Donated the Most Times
+@app.route('/top_donors')
+def top_donors():
+    conn = get_db()
+    query = '''
+    SELECT Donors.Name, Donors.BloodType, COUNT(Donations.DonationID) AS TotalDonations
+    FROM Donors
+    JOIN Donations ON Donors.DonorID = Donations.DonorID
+    WHERE Donations.Status = 'Completed'
+    GROUP BY Donors.DonorID, Donors.Name, Donors.BloodType
+    ORDER BY TotalDonations DESC
+    LIMIT 5
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Top Donors by Completed Donation Count (Top 5)")
+
+# Predefined Query: Donors Who Have Never Donated
+@app.route('/donors_never_donated')
+def donors_never_donated():
+    conn = get_db()
+    query = '''
+    SELECT Name 
+    FROM Donors 
+    WHERE DonorID NOT IN (SELECT DISTINCT DonorID FROM Donations)
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Donors Who Have Never Donated")
+
+# Predefined Query: All Donations with Donor Eligibility Status
+@app.route('/donations_with_eligibility')
+def donations_with_eligibility():
+    conn = get_db()
+    query = '''
+    SELECT Donors.Name, Donations.DonationDate, Donations.Status, DonationEligibility.EligibilityStatus
+    FROM Donations
+    JOIN Donors ON Donations.DonationID = Donors.DonorID
+    LEFT JOIN DonationEligibility ON Donors.DonorID = DonationEligibility.DonorID
+    WHERE Donations.Status = 'Completed'
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="All Completed Donations with Donor Eligibility Status")
+
+
+# Predefined Query: Donors Eligible for Donation Today (56-Day Gap)
+@app.route('/eligible_donors_today')
+def eligible_donors_today():
+    conn = get_db()
+    query = '''
+    SELECT Donors.Name, Donors.BloodType, Donors.LastDonationDate, DonationEligibility.EligibilityStatus
+    FROM Donors
+    JOIN DonationEligibility ON Donors.DonorID = DonationEligibility.DonorID
+    WHERE DonationEligibility.EligibilityStatus = 'Eligible'
+    AND (LastDonationDate IS NULL OR LastDonationDate <= DATE('now', '-56 days'))
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Donors Eligible for Donation Today (56-Day Gap)")
+
+# Predefined Query: Count of Donors by Blood Type
+@app.route('/donors_by_blood_type_count')
+def donors_by_blood_type_count():
+    conn = get_db()
+    query = '''
+    SELECT BloodType, COUNT(*) AS DonorCount
+    FROM Donors
+    GROUP BY BloodType
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Count of Donors by Blood Type")
+
+# Predefined Query: Latest Donation for Each Hospital
+@app.route('/latest_donation_per_hospital')
+def latest_donation_per_hospital():
+    conn = get_db()
+    query = '''
+    SELECT Hospitals.Name AS HospitalName, Donations.DonationDate, Donors.Name AS DonorName, Donations.BloodType
+    FROM Donations
+    JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
+    JOIN Donors ON Donations.DonorID = Donors.DonorID
+    WHERE Donations.DonationDate = (SELECT MAX(DonationDate) FROM Donations WHERE Donations.HospitalID = Hospitals.HospitalID)
+    '''
+    results = conn.execute(query).fetchall()
+    return render_template('query_results.html', results=results, title="Latest Donation for Each Hospital")
+
+
+# Predefined Query: Donations for a Specific Donor (Completed Donations Only)
+@app.route('/donations_for_donor/<int:donor_id>')
+def donations_for_donor(donor_id):
+    conn = get_db()
+    donations = conn.execute('''
+        SELECT Donations.*, Donors.Name AS DonorName, Hospitals.Name AS HospitalName
+        FROM Donations
+        JOIN Donors ON Donations.DonorID = Donors.DonorID
+        JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
+        WHERE Donations.DonorID = ?
+        AND Donations.Status = 'Completed'
+    ''', (donor_id,)).fetchall()
+    return render_template('donations_for_donor.html', donations=donations, donor_id=donor_id)
 
 # Download Donations Report
 @app.route('/download-donations-report')
 def download_donations_report():
     # Implementation for downloading a CSV report (already present in your project)
     pass
-
-
-# Organize a Blood Drive page
-@app.route('/host-blood-drive', methods=['GET', 'POST'])
-def host_blood_drive():
-    conn = get_db()
-    blood_drives = conn.execute('SELECT * FROM BloodDrives').fetchall()
-
-    if request.method == 'POST':
-        organizer_name = request.form['organizer_name']
-        contact_info = request.form['contact_info']
-        email = request.form['email']
-        location = request.form['location']
-        drive_date = request.form['drive_date']
-        expected_donors = request.form['expected_donors']
-        request_date = "2025-04-12"  # Current date (hardcoded for now; ideally use datetime.now())
-
-        try:
-            conn.execute(
-                'INSERT INTO BloodDrives (OrganizerName, ContactInfo, Email, Location, DriveDate, ExpectedDonors, RequestDate) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (organizer_name, contact_info, email, location, drive_date, expected_donors, request_date))
-            conn.commit()
-            return render_template('host_blood_drive.html', active_page='host_blood_drive', blood_drives=blood_drives,
-                                   success="Blood drive request submitted successfully!")
-        except sqlite3.OperationalError as e:
-            return render_template('host_blood_drive.html', active_page='host_blood_drive', blood_drives=blood_drives,
-                                   error=f"Database error: {e}"), 500
-
-    return render_template('host_blood_drive.html', active_page='host_blood_drive', blood_drives=blood_drives)
-
 
 # Biomedical Services page
 @app.route('/biomedical-services')
@@ -639,18 +777,13 @@ def biomedical_services():
     }
     return render_template('biomedical_services.html', active_page='biomedical_services', stats=stats)
 
-@app.route('/donations_for_donor/<int:donor_id>')
-def donations_for_donor(donor_id):
-    conn = get_db()
-    donations = conn.execute('''
-        SELECT Donations.*, Donors.Name AS DonorName, Hospitals.Name AS HospitalName
-        FROM Donations
-        JOIN Donors ON Donations.DonorID = Donors.DonorID
-        JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
-        WHERE Donations.DonorID = ?
-    ''', (donor_id,)).fetchall()
-    return render_template('donations_for_donor.html', donations=donations, donor_id=donor_id)
 
+# Insights Page
+@app.route('/insights')
+def insights():
+    conn = get_db()
+    hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
+    return render_template('insights.html', hospitals=hospitals, active_page='insights')
 
 # Custom 404 Error Handler
 @app.errorhandler(404)
