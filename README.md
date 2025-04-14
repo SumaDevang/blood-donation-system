@@ -27,30 +27,39 @@ This project was developed as part of the CS 665 course for Spring 2025 at Wichi
      Run the initialization script to create and populate the database::**:
    ```bash
    python init_db.py
+This script uses create.sql to set up the schema and insert.sql to populate the database with initial data.
    
 4. **Run the Application: Start the Flask application::**:
    ```bash
    python app.py
    
-The application will be available at http://localhost:5000.
+The application will be available at  http://127.0.0.1:5002
 
 ### Accessing the Application
-Homepage: Visit http://localhost:5000 to access the homepage.
+Homepage: Visit  http://127.0.0.1:5002/ to access the homepage.
 
-### Dashboards:
-Donor Dashboard: http://localhost:5000/donor
-Hospital Dashboard: http://localhost:5000/hospital
-Admin Dashboard: http://localhost:5000/admin
+### Accessing the Application
 
-### Features:
-Homepage: Professional design with role-based access descriptions and an enhanced Data Insights section featuring predefined queries (scheduled donations, eligible donors, recent donations, hospitals with most donations). Streamlined by removing redundant links, with a new Dashboards dropdown in the navigation bar.
-Donor Registration Page: Register as a new donor and access the Donor Dashboard to manage your donations. Features a formal, professional design with success/error messages for better user feedback.
-## Features
-- **Insights Page**: A dedicated page accessible via the navigation bar, featuring predefined analytical queries organized into categories (Donor Insights, Hospital Insights, Donation Insights, Eligibility Insights). Includes a formal grid layout with collapsible sections for better readability and user experience. All queries involving donations now consider only completed donations for accuracy.
+After initializing the database and running the Flask application (see [Setup Instructions](#setup-instructions)), you can access the following pages:
+
+- **Homepage**: [http://localhost:5000/](http://localhost:5000/) - Provides an overview of the system and role-based access descriptions.
+- **Donor Registration**: [http://localhost:5000/donate-blood](http://localhost:5000/donate-blood) - Register as a new donor and access the Donor Dashboard.
+- **Biomedical Services**: [http://localhost:5000/biomedical-services](http://localhost:5000/biomedical-services) - Learn about blood testing, storage, and distribution processes.
+- **Data Insights**: [http://localhost:5000/insights](http://localhost:5000/insights) - Access predefined analytical queries organized into categories.
+- **Dashboards**:
+  - **Donor Dashboard**: [http://localhost:5000/donor](http://localhost:5000/donor) - Schedule donations, view donation history, and manage appointments.
+  - **Hospital Dashboard**: [http://localhost:5000/hospital](http://localhost:5000/hospital) - Manage blood requests, track donation schedules, and search donors by blood type.
+  - **Admin Dashboard**: [http://localhost:5000/admin](http://localhost:5000/admin) - Oversee system operations, manage all data, and generate reports.
+
+### Features
+
+- **Homepage**: Professional design with role-based access descriptions.
+- **Donor Registration Page**: Register as a new donor and access the Donor Dashboard to manage your donations. Features a formal, professional design with success/error messages for better user feedback.
 - **Donor Dashboard**: Schedule new donations, view your donation history, and manage upcoming appointments by entering your email. Now the central hub for all donor activities, with enhanced cancellation feedback.
-- **Hospital Dashboard**: Manage blood requests, track donation schedules, and search donors by blood type requirements.
+- **Hospital Dashboard**: Manage blood requests, track donation schedules, and search donors by blood type requirements using a dedicated search form. Added Data Insights section with hospital-relevant queries (donors eligible for donation today, count of donors by blood type, latest completed donation for each hospital). Improved blood request form to correctly display hospital names in the dropdown.
 - **Admin Dashboard**: Oversee system operations, manage all data (donors, hospitals, donations, blood requests, eligibility checks), and generate reports (system summary with 8 completed donations, completed donations by blood type totaling 8, donations per hospital with completed donations only, downloadable CSV). Added status filter to All Donations table and full CRUD operations for all tables. Fixed Edit and Delete functionality for donors to redirect to Admin Dashboard.
-- **Biomedical Services**: Learn about blood testing, storage, distribution, quality assurance, and safety protocols, with statistics on total donations (8) and available blood units (8).
+- **Insights Page**: A dedicated page accessible via the navigation bar, featuring predefined analytical queries organized into categories (Donor Insights, Hospital Insights, Donation Insights, Eligibility Insights). Includes a formal grid layout with collapsible sections for better readability and user experience. All queries involving donations now consider only completed donations for accuracy.
+- **Biomedical Services**: Learn about blood testing, storage, distribution, quality assurance, and safety protocols, with statistics on total donations (11) and available blood units (8).
 - **Error Handling**: Added a custom 404 error page for better user experience when accessing invalid routes.
 
 ### Project Structure
