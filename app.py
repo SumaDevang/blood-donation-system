@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, make_response
 import sqlite3
 import logging
 import os
-from collections import defaultdict  # Add this import
+from collections import defaultdict
+import csv
+from io import StringIO
 
 app = Flask(__name__)
 
@@ -828,8 +830,28 @@ def donations_for_donor(donor_id):
 # Download Donations Report
 @app.route('/download-donations-report')
 def download_donations_report():
-    # Implementation for downloading a CSV report (already present in your project)
-    pass
+    conn = get_db()
+    donations = conn.execute('SELECT * FROM Donations').fetchall()
+
+    # Generate CSV content
+    output = StringIO()
+    writer = csv.writer(output)
+    # Write CSV header
+    writer.writerow(['DonationID', 'DonorID', 'HospitalID', 'DonationDate', 'BloodType', 'Status'])
+    # Write donation data
+    for donation in donations:
+        writer.writerow([donation['DonationID'], donation['DonorID'], donation['HospitalID'],
+                         donation['DonationDate'], donation['BloodType'], donation['Status']])
+
+    # Prepare the response
+    response = make_response(output.getvalue())
+    response.headers['Content-Disposition'] = 'attachment; filename=donations_report.csv'
+    response.headers['Content-Type'] = 'text/csv'
+
+    # Close the StringIO object
+    output.close()
+
+    return response
 
 # Biomedical Services page
 @app.route('/biomedical-services')
