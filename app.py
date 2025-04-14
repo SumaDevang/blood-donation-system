@@ -147,6 +147,7 @@ def cancel_appointment(donation_id):
 # hospital_dashboard
 @app.route('/hospital', methods=['GET', 'POST'])
 def hospital_dashboard():
+    logging.debug(f"Request method: {request.method}, Query params: {request.args}, Session before: {dict(session)}")
     conn = get_db()
     hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
     blood_requests = conn.execute('SELECT * FROM BloodRequests').fetchall()
@@ -156,9 +157,30 @@ def hospital_dashboard():
         JOIN Donors ON Donations.DonorID = Donors.DonorID
         JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
     ''').fetchall()
-    success = request.args.get('success')  # Get success message from URL (if any)
-    logging.debug(f"Rendering hospital_dashboard with success message: {success}")
-    return render_template('hospital_dashboard.html', hospitals=hospitals, blood_requests=blood_requests, donations=donations, success=success)
+
+    # Handle Search Donors by Blood Type form submission
+    donors = []
+    searched_blood_type = None
+    if request.method == 'POST':
+        blood_type = request.form['blood_type']
+        donors = conn.execute('''
+            SELECT Donors.*, DonationEligibility.EligibilityStatus
+            FROM Donors
+            LEFT JOIN DonationEligibility ON Donors.DonorID = DonationEligibility.DonorID
+            WHERE Donors.BloodType = ?
+        ''', (blood_type,)).fetchall()
+        searched_blood_type = blood_type
+        # Preserve the success message during POST requests
+        success = session.get('success_message', None)
+    else:
+        # Clear the success message on GET requests
+        success = session.pop('success_message', None)
+
+    logging.debug(f"Rendering hospital_dashboard with success message: {success}, Session after: {dict(session)}")
+
+    return render_template('hospital_dashboard.html', hospitals=hospitals, blood_requests=blood_requests,
+                           donations=donations, donors=donors, searched_blood_type=searched_blood_type, success=success)
+
 
 # Hospital Dashboard - Search Donors by Blood Type
 @app.route('/hospital/search-donors', methods=['GET', 'POST'])
@@ -496,6 +518,7 @@ def edit_blood_request(id):
 
     if not blood_request:
         session['success_message'] = "Blood request not found."
+        logging.debug(f"Set session success_message: Blood request not found, Session: {dict(session)}")
         return redirect(url_for('hospital_dashboard'))
 
     if request.method == 'POST':
@@ -509,6 +532,8 @@ def edit_blood_request(id):
                 (hospital_id, blood_type, quantity, request_date, id))
             conn.commit()
             session['success_message'] = "The blood request has been successfully updated."
+            logging.debug(
+                f"Set session success_message: The blood request has been successfully updated, Session: {dict(session)}")
         except sqlite3.OperationalError as e:
             return render_template('edit_blood_request.html', blood_request=blood_request, hospitals=hospitals,
                                    error=f"Database error: {e}"), 500
@@ -525,12 +550,14 @@ def delete_blood_request(id):
         conn.commit()
         if result.rowcount == 0:
             session['success_message'] = "Blood request not found."
+            logging.debug(f"Set session success_message: Blood request not found, Session: {dict(session)}")
         else:
             session['success_message'] = "The blood request has been successfully deleted."
+            logging.debug(f"Set session success_message: The blood request has been successfully deleted, Session: {dict(session)}")
     except sqlite3.OperationalError as e:
         session['success_message'] = f"Database error: {e}"
+        logging.debug(f"Set session success_message: Database error: {e}, Session: {dict(session)}")
     return redirect(url_for('hospital_dashboard'))
-
 
 # Add New Eligibility Check
 @app.route('/eligibility/add', methods=['GET', 'POST'])
