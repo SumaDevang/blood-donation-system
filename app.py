@@ -142,7 +142,7 @@ def cancel_appointment(donation_id):
     return redirect(url_for('donor_dashboard', success="Appointment canceled successfully!"))
 
 # hospital_dashboard
-@app.route('/hospital')
+@app.route('/hospital', methods=['GET', 'POST'])
 def hospital_dashboard():
     conn = get_db()
     hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
@@ -154,8 +154,8 @@ def hospital_dashboard():
         JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
     ''').fetchall()
     success = request.args.get('success')  # Get success message from URL (if any)
-    return render_template('hospital_dashboard.html', hospitals=hospitals, blood_requests=blood_requests, donations=donations)
-
+    logging.debug(f"Rendering hospital_dashboard with success message: {success}")
+    return render_template('hospital_dashboard.html', hospitals=hospitals, blood_requests=blood_requests, donations=donations, success=success)
 
 # Hospital Dashboard - Search Donors by Blood Type
 @app.route('/hospital/search-donors', methods=['GET', 'POST'])
@@ -186,6 +186,10 @@ def search_donors_by_blood_type():
                            donations=donations, donors=donors)
 
 # Request Blood
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 @app.route('/hospital/request-blood', methods=['GET', 'POST'])
 def request_blood():
     conn = get_db()
@@ -195,12 +199,15 @@ def request_blood():
         blood_type = request.form['blood_type']
         quantity = request.form['quantity']
         request_date = request.form['request_date']
+        logging.debug(f"Received blood request form data: hospital_id={hospital_id}, blood_type={blood_type}, quantity={quantity}, request_date={request_date}")
         try:
             conn.execute('INSERT INTO BloodRequests (HospitalID, BloodType, Quantity, RequestDate) VALUES (?, ?, ?, ?)',
                          (hospital_id, blood_type, quantity, request_date))
             conn.commit()
-            return redirect(url_for('hospital_dashboard', success="Blood request submitted successfully!"))
+            logging.debug("Blood request inserted successfully, redirecting to hospital_dashboard with success message")
+            return redirect(url_for('hospital_dashboard', success="The blood request has been successfully submitted."))
         except sqlite3.OperationalError as e:
+            logging.error(f"Database error during blood request submission: {e}")
             return render_template('request_blood.html', hospitals=hospitals, error=f"Database error: {e}"), 500
     return render_template('request_blood.html', hospitals=hospitals)
 
