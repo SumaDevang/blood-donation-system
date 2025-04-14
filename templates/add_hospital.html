@@ -2,7 +2,10 @@
 {% block content %}
 <div class="container">
     <h1>Add New Hospital</h1>
-    <form method="POST" action="{{ url_for('add_hospital') }}">
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="POST" action="{{ url_for('add_hospital') }}" onsubmit="return validateForm()">
         <label for="name">Name:</label>
         <input type="text" name="name" id="name" required><br>
 
@@ -16,11 +19,24 @@
         <select name="hospital_type" id="hospital_type" required>
             <option value="Public">Public</option>
             <option value="Private">Private</option>
-            <option value="Military">Military</option>
-            <option value="Other">Other</option>
         </select><br>
 
         <button type="submit" class="btn">Add Hospital</button>
     </form>
 </div>
+
+<script>
+function validateForm() {
+    const name = document.getElementById('name').value.trim();
+    const location = document.getElementById('location').value.trim();
+    const contact_info = document.getElementById('contact_info').value.trim();
+    const hospitalType = document.getElementById('hospital_type').value;
+
+    if (!name || !location || !contact_info || !hospitalType) {
+        alert('Please fill in all required fields.');
+        return false;
+    }
+    return true;
+}
+</script>
 {% endblock %}

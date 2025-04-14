@@ -325,13 +325,19 @@ def delete_donor(id):
 def add_hospital():
     if request.method == 'POST':
         conn = get_db()
+        # Validate required fields
+        required_fields = ['name', 'location', 'contact_info', 'hospital_type']
+        for field in required_fields:
+            if field not in request.form or not request.form[field]:
+                return render_template('add_hospital.html', error=f"Missing or empty required field: {field}"), 400
+
         name = request.form['name']
         location = request.form['location']
-        contact = request.form['contact']
+        contact_info = request.form['contact_info']
         hospital_type = request.form['hospital_type']
         try:
             conn.execute('INSERT INTO Hospitals (Name, Location, ContactInfo, HospitalType) VALUES (?, ?, ?, ?)',
-                         (name, location, contact, hospital_type))
+                         (name, location, contact_info, hospital_type))
             conn.commit()
             return redirect(url_for('admin_dashboard', success="Hospital added successfully!"))
         except sqlite3.OperationalError as e:
@@ -340,6 +346,7 @@ def add_hospital():
 
 
 # Edit Hospital
+import logging
 @app.route('/hospital/edit/<int:id>', methods=['GET', 'POST'])
 def edit_hospital(id):
     conn = get_db()
@@ -353,21 +360,41 @@ def edit_hospital(id):
                                error="Hospital not found."), 404
 
     if request.method == 'POST':
+        # Log the entire form data
+        logging.debug(f"Received form data: {dict(request.form)}")
+
+        # Check form token
+        if 'form_token' not in request.form or request.form['form_token'] != 'edit_hospital_form':
+            return render_template('edit_hospital.html', hospital=hospital, error="Invalid form submission."), 400
+
+        # Validate required fields
+        required_fields = ['name', 'location', 'contact_info', 'hospital_type']
+        for field in required_fields:
+            if field not in request.form or not request.form[field]:
+                logging.debug(f"Validation failed: Missing or empty field: {field}")
+                return render_template('edit_hospital.html', hospital=hospital,
+                                       error=f"Missing or empty required field: {field}"), 400
+
         name = request.form['name']
         location = request.form['location']
-        contact = request.form['contact']
+        contact_info = request.form['contact_info']
         hospital_type = request.form['hospital_type']
+
+        logging.debug(
+            f"Processed form data: name={name}, location={location}, contact_info={contact_info}, hospital_type={hospital_type}, id={id}")
+
         try:
             conn.execute(
                 'UPDATE Hospitals SET Name = ?, Location = ?, ContactInfo = ?, HospitalType = ? WHERE HospitalID = ?',
-                (name, location, contact, hospital_type, id))
+                (name, location, contact_info, hospital_type, id))
             conn.commit()
+            updated_hospital = conn.execute('SELECT * FROM Hospitals WHERE HospitalID = ?', (id,)).fetchone()
+            logging.debug(f"Updated hospital data: {dict(updated_hospital)}")
         except sqlite3.OperationalError as e:
             return render_template('edit_hospital.html', hospital=hospital, error=f"Database error: {e}"), 500
         return redirect(url_for('admin_dashboard'))
 
     return render_template('edit_hospital.html', hospital=hospital)
-
 
 # Delete Hospital
 @app.route('/hospital/delete/<int:id>')
