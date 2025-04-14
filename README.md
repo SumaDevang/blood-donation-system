@@ -45,11 +45,13 @@ Admin Dashboard: http://localhost:5000/admin
 ### Features:
 Homepage: Professional design with role-based access descriptions and an enhanced Data Insights section featuring predefined queries (scheduled donations, eligible donors, recent donations, hospitals with most donations). Streamlined by removing redundant links, with a new Dashboards dropdown in the navigation bar.
 Donor Registration Page: Register as a new donor and access the Donor Dashboard to manage your donations. Features a formal, professional design with success/error messages for better user feedback.
-Donor Dashboard: Schedule new donations, view your donation history, and manage upcoming appointments by entering your email. Now the central hub for all donor activities, with enhanced cancellation feedback.
-Hospital Dashboard: Manage blood requests, track donation schedules, and search donors by blood type requirements.
-Admin Dashboard: Oversee system operations, manage all data (donors, hospitals, donations, blood requests, eligibility checks), and generate reports (system summary with 8 completed donations, completed donations by blood type totaling 8, donations per hospital with completed donations only, downloadable CSV). Added status filter to All Donations table and full CRUD operations for all tables. Fixed Edit and Delete functionality for donors to redirect to Admin Dashboard.
-Biomedical Services: Learn about blood testing, storage, distribution, quality assurance, and safety protocols, with statistics on total donations (8) and available blood units (8).
-Error Handling: Added a custom 404 error page for better user experience when accessing invalid routes.
+## Features
+- **Insights Page**: A dedicated page accessible via the navigation bar, featuring predefined analytical queries organized into categories (Donor Insights, Hospital Insights, Donation Insights, Eligibility Insights). Includes a formal grid layout with collapsible sections for better readability and user experience. All queries involving donations now consider only completed donations for accuracy.
+- **Donor Dashboard**: Schedule new donations, view your donation history, and manage upcoming appointments by entering your email. Now the central hub for all donor activities, with enhanced cancellation feedback.
+- **Hospital Dashboard**: Manage blood requests, track donation schedules, and search donors by blood type requirements.
+- **Admin Dashboard**: Oversee system operations, manage all data (donors, hospitals, donations, blood requests, eligibility checks), and generate reports (system summary with 8 completed donations, completed donations by blood type totaling 8, donations per hospital with completed donations only, downloadable CSV). Added status filter to All Donations table and full CRUD operations for all tables. Fixed Edit and Delete functionality for donors to redirect to Admin Dashboard.
+- **Biomedical Services**: Learn about blood testing, storage, distribution, quality assurance, and safety protocols, with statistics on total donations (8) and available blood units (8).
+- **Error Handling**: Added a custom 404 error page for better user experience when accessing invalid routes.
 
 ### Project Structure
 app.py: The main Flask application file containing all routes and logic.
@@ -62,11 +64,11 @@ static/js/script.js: JavaScript file for client-side validation (if any).
 database.db: SQLite database file (generated after running init_db.py).
 
 ### Database Schema
-Donors: Stores donor information (DonorID, Name, DateOfBirth, BloodType, ContactInfo, Email, LastDonationDate).
-Hospitals: Stores hospital information (HospitalID, Name, Location, ContactInfo, HospitalType).
-Donations: Stores donation records (DonationID, DonorID, HospitalID, DonationDate, BloodType, Status).
-BloodRequests: Stores blood requests by hospitals (RequestID, HospitalID, BloodType, Quantity, RequestDate).
-DonationEligibility: Stores donor eligibility status (DonorID, EligibilityStatus).
+- **Donors**: Stores donor information (DonorID, Name, DateOfBirth, BloodType, ContactInfo, Email, LastDonationDate).
+- **Hospitals**: Stores hospital information (HospitalID, Name, Location, ContactInfo, HospitalType).
+- **Donations**: Stores donation records (DonationID, DonorID, HospitalID, DonationDate, BloodType, Status).
+- **BloodRequests**: Stores blood requests by hospitals (RequestID, HospitalID, BloodType, Quantity, RequestDate).
+- **DonationEligibility**: Stores donor eligibility status (DonorID, EligibilityStatus).
 
 ### Usage
 ### Donors:
