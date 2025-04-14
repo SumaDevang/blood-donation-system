@@ -38,7 +38,8 @@ function updateHospitalFormAction() {
                 <td>
                     <a href="{{ url_for('edit_donor', id=donor['DonorID']) }}">Edit</a> |
                     <a href="{{ url_for('delete_donor', id=donor['DonorID']) }}"
-                       onclick="return confirm('Are you sure you want to delete the entry of the donor?')">Delete</a>
+                       onclick="return confirm('Do you confirm the deletion of this donor entry? This action cannot be undone.')">Delete</a>
+                </td>
                 </td>
             </tr>
             {% endfor %}
@@ -67,7 +68,7 @@ function updateHospitalFormAction() {
                 <td>
                     <a href="{{ url_for('edit_hospital', id=hospital['HospitalID']) }}">Edit</a> |
                     <a href="{{ url_for('delete_hospital', id=hospital['HospitalID']) }}"
-                       onclick="return confirm('Are you sure you to delete hospital entry?')">Delete</a>
+                       onclick="return confirm('Do you confirm the deletion of this hospital entry? This action cannot be undone.')">Delete</a>
                 </td>
             </tr>
             {% endfor %}
@@ -106,7 +107,7 @@ function updateHospitalFormAction() {
                 <td>
                     <a href="{{ url_for('edit_donation', id=donation['DonationID']) }}">Edit</a> |
                     <a href="{{ url_for('delete_donation', id=donation['DonationID']) }}"
-                       onclick="return confirm('Are you sure?')">Delete</a>
+                       onclick="return confirm('Do you confirm the deletion of this donation entry? This action cannot be undone.')">Delete</a>
                 </td>
             </tr>
             {% endfor %}
@@ -134,8 +135,7 @@ function updateHospitalFormAction() {
                 <td>
                     <a href="{{ url_for('edit_blood_request', id=request['RequestID']) }}">Edit</a> |
                     <a href="{{ url_for('delete_blood_request', id=request['RequestID']) }}"
-                       onclick="return confirm('Are you sure you want to delete?')">Delete</a>
-                </td>
+                       onclick="return confirm('Do you confirm the deletion of this blood request entry? This action cannot be undone.')">Delete</a>                </td>
             </tr>
             {% endfor %}
         </table>
