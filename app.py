@@ -1,16 +1,19 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
-from collections import defaultdict
+import logging
+import os
 
 app = Flask(__name__)
 
+# Set the secret key from environment variable or generate a random one as fallback
+app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
+logging.basicConfig(level=logging.DEBUG)
 
 # Database connection helper
 def get_db():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn
-
 
 # Homepage
 @app.route('/')
@@ -489,13 +492,11 @@ def delete_donation(id):
 def edit_blood_request(id):
     conn = get_db()
     blood_request = conn.execute('SELECT * FROM BloodRequests WHERE RequestID = ?', (id,)).fetchone()
+    hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
 
     if not blood_request:
-        return render_template('admin_dashboard.html', donors=conn.execute('SELECT * FROM Donors').fetchall(),
-                               hospitals=conn.execute('SELECT * FROM Hospitals').fetchall(),
-                               donations=conn.execute('SELECT * FROM Donations').fetchall(),
-                               blood_requests=conn.execute('SELECT * FROM BloodRequests').fetchall(),
-                               error="Blood request not found."), 404
+        session['success_message'] = "Blood request not found."
+        return redirect(url_for('hospital_dashboard'))
 
     if request.method == 'POST':
         hospital_id = request.form['hospital_id']
@@ -507,25 +508,28 @@ def edit_blood_request(id):
                 'UPDATE BloodRequests SET HospitalID = ?, BloodType = ?, Quantity = ?, RequestDate = ? WHERE RequestID = ?',
                 (hospital_id, blood_type, quantity, request_date, id))
             conn.commit()
+            session['success_message'] = "The blood request has been successfully updated."
         except sqlite3.OperationalError as e:
-            return render_template('edit_blood_request.html', blood_request=blood_request,
+            return render_template('edit_blood_request.html', blood_request=blood_request, hospitals=hospitals,
                                    error=f"Database error: {e}"), 500
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('hospital_dashboard'))
 
-    hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
     return render_template('edit_blood_request.html', blood_request=blood_request, hospitals=hospitals)
-
 
 # Delete Blood Request
 @app.route('/blood-request/delete/<int:id>')
 def delete_blood_request(id):
     conn = get_db()
     try:
-        conn.execute('DELETE FROM BloodRequests WHERE RequestID = ?', (id,))
+        result = conn.execute('DELETE FROM BloodRequests WHERE RequestID = ?', (id,))
         conn.commit()
+        if result.rowcount == 0:
+            session['success_message'] = "Blood request not found."
+        else:
+            session['success_message'] = "The blood request has been successfully deleted."
     except sqlite3.OperationalError as e:
-        return f"Database error: {e}", 500
-    return redirect(url_for('admin_dashboard'))
+        session['success_message'] = f"Database error: {e}"
+    return redirect(url_for('hospital_dashboard'))
 
 
 # Add New Eligibility Check

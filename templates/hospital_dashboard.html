@@ -61,6 +61,7 @@
                 <th>Blood Type</th>
                 <th>Quantity</th>
                 <th>Request Date</th>
+                <th>Actions</th>
             </tr>
             {% for request in blood_requests %}
             <tr>
@@ -69,6 +70,11 @@
                 <td>{{ request['BloodType'] }}</td>
                 <td>{{ request['Quantity'] }}</td>
                 <td>{{ request['RequestDate'] }}</td>
+                <td>
+                    <a href="{{ url_for('edit_blood_request', id=request['RequestID']) }}">Edit</a> |
+                    <a href="{{ url_for('delete_blood_request', id=request['RequestID']) }}"
+                       onclick="return confirm('Do you confirm the deletion of this blood request entry? This action cannot be undone.')">Delete</a>
+                </td>
             </tr>
             {% endfor %}
         </table>
