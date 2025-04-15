@@ -873,10 +873,6 @@ def insights():
     hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
     return render_template('insights.html', hospitals=hospitals, active_page='insights')
 
-# Custom 404 Error Handler
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
 
 
 if __name__ == '__main__':
