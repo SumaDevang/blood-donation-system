@@ -2,26 +2,30 @@
 {% block content %}
 <div class="container">
     <h1>{{ title }}</h1>
-    <table>
-        <tr>
-            {% for key in results[0].keys() if key not in ['DonorID', 'HospitalID'] %}
-                <th>{{ key }}</th>
+    {% if results %}
+        <table>
+            <tr>
+                {% for key in results[0].keys() if key not in ['DonorID', 'HospitalID'] %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+            </tr>
+            {% for row in results %}
+            <tr>
+                {% for key in row.keys() if key not in ['DonorID', 'HospitalID'] %}
+                    <td>
+                        {% if key == 'LastDonationDate' %}
+                            {{ row[key] if row[key] else "Never Donated" }}
+                        {% else %}
+                            {{ row[key] }}
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
             {% endfor %}
-        </tr>
-        {% for row in results %}
-        <tr>
-            {% for key in row.keys() if key not in ['DonorID', 'HospitalID'] %}
-                <td>
-                    {% if key == 'LastDonationDate' %}
-                        {{ row[key] if row[key] else "Never Donated" }}
-                    {% else %}
-                        {{ row[key] }}
-                    {% endif %}
-                </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
+        </table>
+    {% else %}
+        <p>No results found.</p>
+    {% endif %}
     <a href="{{ url_for('insights') }}" class="btn">Back to Insights</a>
 </div>
 {% endblock %}
