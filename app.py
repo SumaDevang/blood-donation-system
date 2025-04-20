@@ -266,29 +266,28 @@ def admin_dashboard():
         'total_blood_requests': len(blood_requests)
     }
 
-    # Completed Donations by Blood Type (count of completed donations, not distinct donors)
+    # Donors by Blood Type (count completed donations by Donations.BloodType)
     donors_by_blood_type = conn.execute('''
-        SELECT Donors.BloodType, COUNT(Donations.DonationID) as Count
-        FROM Donors
-        JOIN Donations ON Donors.DonorID = Donations.DonorID
-        WHERE Donations.Status = 'Completed'
-        GROUP BY Donors.BloodType
-    ''').fetchall()
+            SELECT Donations.BloodType, COUNT(Donations.DonationID) as Count
+            FROM Donations
+            WHERE Donations.Status = 'Completed'
+            GROUP BY Donations.BloodType
+        ''').fetchall()
     donors_by_blood_type = defaultdict(int, [(row['BloodType'], row['Count']) for row in donors_by_blood_type])
 
     # Donations per Hospital (only Completed donations)
     donations_per_hospital = conn.execute('''
-        SELECT Hospitals.Name, COUNT(Donations.DonationID) as DonationCount
-        FROM Hospitals
-        LEFT JOIN Donations ON Hospitals.HospitalID = Donations.HospitalID AND Donations.Status = 'Completed'
-        GROUP BY Hospitals.HospitalID, Hospitals.Name
-    ''').fetchall()
+            SELECT Hospitals.Name, COUNT(Donations.DonationID) as DonationCount
+            FROM Hospitals
+            LEFT JOIN Donations ON Hospitals.HospitalID = Donations.HospitalID AND Donations.Status = 'Completed'
+            GROUP BY Hospitals.HospitalID, Hospitals.Name
+        ''').fetchall()
 
     return render_template('admin_dashboard.html', donors=donors, hospitals=hospitals,
-                          donations=donations, blood_requests=blood_requests,
-                          donation_eligibility=donation_eligibility,
-                          summary=summary, donors_by_blood_type=donors_by_blood_type,
-                          donations_per_hospital=donations_per_hospital, status_filter=status_filter)
+                           donations=donations, blood_requests=blood_requests,
+                           donation_eligibility=donation_eligibility,
+                           summary=summary, donors_by_blood_type=donors_by_blood_type,
+                           donations_per_hospital=donations_per_hospital, status_filter=status_filter)
 
 
 # Add New Donor
