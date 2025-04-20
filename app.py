@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, session, make_response
+from io import StringIO
+from datetime import date
 import sqlite3
 import logging
 import os
 from collections import defaultdict
 import csv
-from io import StringIO
+
 
 app = Flask(__name__)
 
@@ -773,17 +775,20 @@ def donations_with_eligibility():
 
 
 # Predefined Query: Donors Eligible for Donation Today (56-Day Gap)
-@app.route('/eligible_donors_today')
+@app.route('/eligible-donors-today')
 def eligible_donors_today():
     conn = get_db()
-    query = '''
-    SELECT Donors.Name, Donors.BloodType, Donors.LastDonationDate, DonationEligibility.EligibilityStatus
-    FROM Donors
-    JOIN DonationEligibility ON Donors.DonorID = DonationEligibility.DonorID
-    WHERE DonationEligibility.EligibilityStatus = 'Eligible'
-    AND (LastDonationDate IS NULL OR LastDonationDate <= DATE('now', '-56 days'))
-    '''
-    results = conn.execute(query).fetchall()
+    today = date.today().isoformat()  # Use date.today() instead of datetime.date.today()
+    results = conn.execute('''
+        SELECT Donors.Name, Donors.BloodType, MAX(Donations.DonationDate) as LastDonationDate, DonationEligibility.EligibilityStatus
+        FROM Donors
+        LEFT JOIN Donations ON Donors.DonorID = Donations.DonorID
+        LEFT JOIN DonationEligibility ON Donors.DonorID = DonationEligibility.DonorID
+        WHERE DonationEligibility.EligibilityStatus = 'Eligible'
+        AND (Donations.DonationDate IS NULL 
+             OR Donations.DonationDate <= date(?, '-56 days'))
+        GROUP BY Donors.DonorID, Donors.Name, Donors.BloodType, DonationEligibility.EligibilityStatus
+    ''', (today,)).fetchall()
     return render_template('query_results.html', results=results, title="Donors Eligible for Donation Today (56-Day Gap)")
 
 # Predefined Query: Count of Donors by Blood Type
