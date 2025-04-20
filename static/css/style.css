@@ -383,5 +383,69 @@ nav a.active::after {
     max-width: 200px;
 }
 
+nav {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Ensure consistent box model */
+}
 
+/* Ensure consistent styling for all nav items */
+nav a, nav .dropdown .dropbtn {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center the text horizontally */
+    color: #333;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    line-height: 1;
+    height: 48px; /* Explicitly set height for consistency */
+    box-sizing: border-box;
+    vertical-align: middle; /* Ensure vertical alignment */
+}
 
+nav a:hover, nav .dropdown .dropbtn:hover {
+    background-color: #ddd;
+}
+
+/* Dropdown container */
+nav .dropdown {
+    position: relative;
+    display: flex; /* Ensure the dropdown container aligns with other items */
+    align-items: center;
+    height: 48px; /* Match the height of other nav items */
+}
+
+/* Dropdown menu */
+nav .dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    top: 100%;
+    left: 0;
+}
+
+nav .dropdown .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    height: auto; /* Allow dropdown items to size naturally */
+}
+
+nav .dropdown .dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+nav .dropdown:hover .dropdown-content {
+    display: block;
+}
