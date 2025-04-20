@@ -716,19 +716,18 @@ def recent_donation_per_donor():
     results = conn.execute(query).fetchall()
     return render_template('query_results.html', results=results, title="Most Recent Donation for Each Donor")
 
-# Update Existing Route: Hospitals with Most Donations (Change LIMIT to 5)
-@app.route('/hospitals_with_most_donations')
+# Hospitals with Most Donations (Change LIMIT to 5)
+@app.route('/hospitals-most-donations')
 def hospitals_with_most_donations():
     conn = get_db()
-    query = '''
-    SELECT Hospitals.Name, COUNT(Donations.DonationID) as DonationCount
-    FROM Hospitals
-    LEFT JOIN Donations ON Hospitals.HospitalID = Donations.HospitalID
-    GROUP BY Hospitals.HospitalID, Hospitals.Name
-    ORDER BY DonationCount DESC
-    LIMIT 5
-    '''
-    results = conn.execute(query).fetchall()
+    results = conn.execute('''
+        SELECT Hospitals.Name, COUNT(Donations.DonationID) as DonationCount
+        FROM Hospitals
+        LEFT JOIN Donations ON Hospitals.HospitalID = Donations.HospitalID AND Donations.Status = 'Completed'
+        GROUP BY Hospitals.HospitalID, Hospitals.Name
+        ORDER BY DonationCount DESC
+        LIMIT 5
+    ''').fetchall()
     return render_template('query_results.html', results=results, title="Hospitals with Most Donations (Top 5)")
 
 # Predefined Query: Donors Who Have Donated the Most Times
