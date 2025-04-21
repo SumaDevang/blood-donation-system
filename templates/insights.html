@@ -43,15 +43,7 @@
                     <p>View the most recent completed donation received by each hospital.</p>
                 </div>
                 <div class="insights-item">
-                    <span>Donors Who Completed Donations to a Specific Hospital:</span>
-                    <form id="hospitalForm" method="GET" action="{{ url_for('donors_to_specific_hospital') }}" style="display:inline;">
-                        <select name="hospital_name" id="hospitalSelect" onchange="this.form.submit()">
-                            <option value="" disabled selected>Select a hospital</option>
-                            {% for hospital in hospitals %}
-                                <option value="{{ hospital['Name'] }}">{{ hospital['Name'] }}</option>
-                            {% endfor %}
-                        </select>
-                    </form>
+                    <a href="{{ url_for('donors_to_specific_hospital') }}">Donors Who Completed Donations to a Specific Hospital</a>
                     <p>View donors who completed donations to a specific hospital.</p>
                 </div>
             </div>
@@ -99,7 +91,7 @@ function updateHospitalFormAction() {
     var select = document.getElementById('hospitalSelect');
     var hospitalName = select.value;
     if (hospitalName) {
-        form.action = "/donors_for_hospital/" + encodeURIComponent(hospitalName);
+        form.action = "{{ url_for('donors_to_specific_hospital') }}" + "?hospital_name=" + encodeURIComponent(hospitalName);
         form.submit();
     }
 }

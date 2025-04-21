@@ -756,10 +756,15 @@ def donors_to_specific_hospital():
     else:
         print("No hospital_id found, returning empty results")
 
+    # Pass hospital_name to the template, default to empty string if not set
+    hospital_name = request.args.get('hospital_name', '') if request.method == 'GET' else request.form.get(
+        'hospital_id', '')
+    if hospital_name and hospital_id:
+        hospital = conn.execute('SELECT Name FROM Hospitals WHERE HospitalID = ?', (hospital_id,)).fetchone()
+        hospital_name = hospital['Name'] if hospital else hospital_name
+
     return render_template('donors_to_specific_hospital.html', results=results, hospitals=hospitals,
-                           title="Donors Who Completed Donations to a Specific Hospital")
-
-
+                           title="Donors Who Completed Donations to a Specific Hospital", hospital_name=hospital_name)
 
 
 

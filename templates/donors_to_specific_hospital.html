@@ -10,7 +10,7 @@
             <select name="hospital_id" id="hospital_id" required>
                 <option value="" disabled selected>--Select a Hospital--</option>
                 {% for hospital in hospitals %}
-                    <option value="{{ hospital['HospitalID'] }}">{{ hospital['Name'] }}</option>
+                    <option value="{{ hospital.HospitalID }}" {% if hospital.HospitalID == selected_hospital_id %}selected{% endif %}>{{ hospital.Name }}</option>
                 {% endfor %}
             </select>
             <button type="submit">Submit</button>
@@ -19,7 +19,7 @@
 
     {% if results %}
         <section class="results">
-            <h2>Donation Results</h2>
+            <h2>Donation Results for {{ hospital_name }}</h2>
             <table>
                 <tr>
                     {% for key in results[0].keys() if key not in ['DonorID', 'HospitalID'] %}
@@ -36,9 +36,9 @@
             </table>
         </section>
     {% else %}
-        {% if request.method == 'POST' or request.args.get('hospital_name') %}
+        {% if request.method == 'POST' %}
             <section class="results">
-                <p>No results found.</p>
+                <p>No results found for {{ hospital_name }}.</p>
             </section>
         {% endif %}
     {% endif %}
