@@ -722,7 +722,27 @@ def donor_donation_history():
 def donors_to_specific_hospital():
     conn = get_db()
     hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
-    hospital_id = request.form.get('hospital_id') if request.method == 'POST' else None
+
+    # Determine hospital_id based on the request
+    if request.method == 'POST':
+        hospital_id = request.form.get('hospital_id')
+        print(f"POST request: hospital_id = {hospital_id}")
+    else:
+        hospital_name = request.args.get('hospital_name')
+        print(f"GET request: hospital_name = {hospital_name}")
+        if hospital_name:
+            hospital_name = hospital_name.strip()
+            hospital = conn.execute('SELECT HospitalID FROM Hospitals WHERE TRIM(Name) = ? COLLATE NOCASE',
+                                    (hospital_name,)).fetchone()
+            hospital_id = hospital['HospitalID'] if hospital else None
+            print(f"Hospital lookup: {hospital_name} -> HospitalID = {hospital_id}")
+            if hospital_id is None:
+                hospital_names = conn.execute('SELECT Name FROM Hospitals').fetchall()
+                print(f"Available hospital names: {[h['Name'] for h in hospital_names]}")
+        else:
+            hospital_id = None
+            print("No hospital_name provided in GET request")
+
     results = []
     if hospital_id:
         results = conn.execute('''
@@ -732,7 +752,16 @@ def donors_to_specific_hospital():
             JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
             WHERE Donations.Status = 'Completed' AND Hospitals.HospitalID = ?
         ''', (hospital_id,)).fetchall()
-    return render_template('donors_to_specific_hospital.html', results=results, hospitals=hospitals, title="Donors Who Completed Donations to a Specific Hospital")
+        print(f"Query results: {len(results)} donations found for HospitalID {hospital_id}")
+    else:
+        print("No hospital_id found, returning empty results")
+
+    return render_template('donors_to_specific_hospital.html', results=results, hospitals=hospitals,
+                           title="Donors Who Completed Donations to a Specific Hospital")
+
+
+
+
 
 # Predefined Query: Most Recent Donation for Each Donor
 @app.route('/recent_donation_per_donor')
@@ -918,7 +947,6 @@ def insights():
     conn = get_db()
     hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
     return render_template('insights.html', hospitals=hospitals, active_page='insights')
-
 
 
 if __name__ == '__main__':

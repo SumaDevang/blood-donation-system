@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>{{ title }}</h1>
+    <p class="subtitle">Select a hospital to view donors who have completed donations.</p>
+
+    <section class="hospital-selection">
+        <form method="POST" action="{{ url_for('donors_to_specific_hospital') }}">
+            <label for="hospital_id">Select Hospital:</label>
+            <select name="hospital_id" id="hospital_id" required>
+                <option value="" disabled selected>--Select a Hospital--</option>
+                {% for hospital in hospitals %}
+                    <option value="{{ hospital['HospitalID'] }}">{{ hospital['Name'] }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Submit</button>
+        </form>
+    </section>
+
+    {% if results %}
+        <section class="results">
+            <h2>Donation Results</h2>
+            <table>
+                <tr>
+                    {% for key in results[0].keys() if key not in ['DonorID', 'HospitalID'] %}
+                        <th>{{ key }}</th>
+                    {% endfor %}
+                </tr>
+                {% for row in results %}
+                    <tr>
+                        {% for key in row.keys() if key not in ['DonorID', 'HospitalID'] %}
+                            <td>{{ row[key] }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </section>
+    {% endif %}
+
+    <a href="{{ url_for('insights') }}" class="btn">Back to Insights</a>
+</div>
+{% endblock %}

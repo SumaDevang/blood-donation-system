@@ -44,8 +44,8 @@
                 </div>
                 <div class="insights-item">
                     <span>Donors Who Completed Donations to a Specific Hospital:</span>
-                    <form id="hospitalForm" method="GET" style="display:inline;">
-                        <select name="hospital_name" id="hospitalSelect" onchange="updateHospitalFormAction()">
+                    <form id="hospitalForm" method="GET" action="{{ url_for('donors_to_specific_hospital') }}" style="display:inline;">
+                        <select name="hospital_name" id="hospitalSelect" onchange="this.form.submit()">
                             <option value="" disabled selected>Select a hospital</option>
                             {% for hospital in hospitals %}
                                 <option value="{{ hospital['Name'] }}">{{ hospital['Name'] }}</option>
