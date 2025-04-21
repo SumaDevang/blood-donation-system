@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, make_response
+from flask import Flask, render_template, request, redirect, url_for, session, make_response, g
 from io import StringIO
 from datetime import date
 import sqlite3
@@ -9,6 +9,23 @@ import csv
 
 
 app = Flask(__name__)
+app.config['DATABASE'] = 'database.db'
+app.config['SQLITE_TIMEOUT'] = 10
+
+def get_db():
+    if 'db' not in g:
+        g.db = sqlite3.connect(
+            app.config['DATABASE'],
+            timeout=app.config['SQLITE_TIMEOUT']
+        )
+        g.db.row_factory = sqlite3.Row
+    return g.db
+
+@app.teardown_appcontext
+def close_db(error):
+    if 'db' in g:
+        g.db.close()
+        g.pop('db')
 
 # Set the secret key from environment variable or generate a random one as fallback
 app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
@@ -624,6 +641,17 @@ def delete_eligibility(id):
         return f"Database error: {e}", 500
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/donations-by-blood-type')
+def donations_by_blood_type():
+    conn = get_db()
+    results = conn.execute('''
+        SELECT Donations.BloodType, COUNT(Donations.DonationID) as Count
+        FROM Donations
+        WHERE Donations.Status = 'Completed'
+        GROUP BY Donations.BloodType
+    ''').fetchall()
+    return render_template('query_results.html', results=results, title="Donations by Blood Type")
+
 ##################### Predefined Query:#########################
 # Predefined Query: Scheduled Donations
 @app.route('/scheduled_donations')
@@ -668,6 +696,9 @@ def recent_donations():
     LIMIT 5
     '''
     results = conn.execute(query).fetchall()
+    for row in results:
+        print(f"Donor: {row['Name']}, BloodType: {row['BloodType']}, Date: {row['DonationDate']}")
+    conn.commit()  # Ensure any pending changes are committed
     return render_template('query_results.html', results=results, title="Recent Donations (Last 5 Completed)")
 
 
@@ -687,20 +718,21 @@ def donor_donation_history():
 
 
 # Predefined Query: Donors Who Donated to a Specific Hospital
-@app.route('/donors_for_hospital/<string:hospital_name>')
-def donors_for_hospital(hospital_name):
+@app.route('/donors-to-specific-hospital', methods=['GET', 'POST'])
+def donors_to_specific_hospital():
     conn = get_db()
-    query = '''
-    SELECT Donors.Name, Donors.BloodType, Donations.DonationDate, Hospitals.Name AS HospitalName
-    FROM Donations
-    JOIN Donors ON Donations.DonorID = Donors.DonorID
-    JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
-    WHERE Hospitals.Name = ?
-    AND Donations.Status = 'Completed'
-    '''
-    results = conn.execute(query, (hospital_name,)).fetchall()
-    return render_template('query_results.html', results=results, title=f"Donors Who Completed Donations to {hospital_name}")
-
+    hospitals = conn.execute('SELECT * FROM Hospitals').fetchall()
+    hospital_id = request.form.get('hospital_id') if request.method == 'POST' else None
+    results = []
+    if hospital_id:
+        results = conn.execute('''
+            SELECT Donors.Name, Donations.BloodType, Donations.DonationDate, Donations.Status, Hospitals.Name as HospitalName
+            FROM Donors
+            JOIN Donations ON Donors.DonorID = Donations.DonorID
+            JOIN Hospitals ON Donations.HospitalID = Hospitals.HospitalID
+            WHERE Donations.Status = 'Completed' AND Hospitals.HospitalID = ?
+        ''', (hospital_id,)).fetchall()
+    return render_template('donors_to_specific_hospital.html', results=results, hospitals=hospitals, title="Donors Who Completed Donations to a Specific Hospital")
 
 # Predefined Query: Most Recent Donation for Each Donor
 @app.route('/recent_donation_per_donor')
@@ -730,20 +762,19 @@ def hospitals_with_most_donations():
     return render_template('query_results.html', results=results, title="Hospitals with Most Donations (Top 5)")
 
 # Predefined Query: Donors Who Have Donated the Most Times
-@app.route('/top_donors')
+@app.route('/top-donors-by-donation-count')
 def top_donors():
     conn = get_db()
-    query = '''
-    SELECT Donors.Name, Donors.BloodType, COUNT(Donations.DonationID) AS TotalDonations
-    FROM Donors
-    JOIN Donations ON Donors.DonorID = Donations.DonorID
-    WHERE Donations.Status = 'Completed'
-    GROUP BY Donors.DonorID, Donors.Name, Donors.BloodType
-    ORDER BY TotalDonations DESC
-    LIMIT 5
-    '''
-    results = conn.execute(query).fetchall()
-    return render_template('query_results.html', results=results, title="Top Donors by Completed Donation Count (Top 5)")
+    results = conn.execute('''
+        SELECT Donors.Name, Donors.BloodType, COUNT(Donations.DonationID) as DonationCount
+        FROM Donors
+        JOIN Donations ON Donors.DonorID = Donations.DonorID
+        WHERE Donations.Status = 'Completed'
+        GROUP BY Donors.DonorID, Donors.Name, Donors.BloodType
+        ORDER BY DonationCount DESC
+        LIMIT 5
+    ''').fetchall()
+    return render_template('query_results.html', results=results, title="Top Donors by Completed Donation Count (Top 5) - Donor Blood Type")
 
 # Predefined Query: Donors Who Have Never Donated
 @app.route('/donors_never_donated')
@@ -762,7 +793,7 @@ def donors_never_donated():
 def donations_with_eligibility():
     conn = get_db()
     query = '''
-    SELECT Donors.Name, Donations.DonationDate, Donations.Status, DonationEligibility.EligibilityStatus
+    SELECT Donors.Name, Donations.DonationDate, Donations.Status, DonationEligibility.EligibilityStatus, Donations.BloodType
     FROM Donations
     JOIN Donors ON Donations.DonationID = Donors.DonorID
     LEFT JOIN DonationEligibility ON Donors.DonorID = DonationEligibility.DonorID
@@ -829,6 +860,18 @@ def donations_for_donor(donor_id):
         AND Donations.Status = 'Completed'
     ''', (donor_id,)).fetchall()
     return render_template('donations_for_donor.html', donations=donations, donor_id=donor_id)
+
+@app.route('/completed-donor-donation-history')
+def completed_donor_donation_history():
+    conn = get_db()
+    results = conn.execute('''
+        SELECT Donors.Name, Donations.BloodType, Donations.DonationDate, Donations.Status
+        FROM Donors
+        JOIN Donations ON Donors.DonorID = Donations.DonorID
+        WHERE Donations.Status = 'Completed'
+    ''').fetchall()
+    return render_template('query_results.html', results=results, title="Completed Donor Donation History (All Donors)")
+
 
 # Download Donations Report
 @app.route('/download-donations-report')
