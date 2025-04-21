@@ -35,6 +35,12 @@
                 {% endfor %}
             </table>
         </section>
+    {% else %}
+        {% if request.method == 'POST' or request.args.get('hospital_name') %}
+            <section class="results">
+                <p>No results found.</p>
+            </section>
+        {% endif %}
     {% endif %}
 
     <a href="{{ url_for('insights') }}" class="btn">Back to Insights</a>
