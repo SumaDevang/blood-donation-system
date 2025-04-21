@@ -1,0 +1,8 @@
+# macOS system files
+.DS_Store
+
+# IDE-specific files
+.idea/
+
+# Database files
+database.db
