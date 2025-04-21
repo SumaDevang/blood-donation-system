@@ -71,6 +71,8 @@ templates/: Directory containing HTML templates for the application (e.g., index
 static/css/style.css: CSS file for styling the application with a formal, professional design.
 static/js/script.js: JavaScript file for client-side validation (if any).
 database.db: SQLite database file (generated after running init_db.py).
+README.md: Project documentation (this file).
+project.md: Additional project documentation (e.g., for CS 665 requirements).
 
 ### Database Schema
 - **Donors**: Stores donor information (DonorID, Name, DateOfBirth, BloodType, ContactInfo, Email, LastDonationDate).
