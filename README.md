@@ -42,14 +42,14 @@ Homepage: Visit  http://127.0.0.1:5002/ to access the homepage.
 
 After initializing the database and running the Flask application (see [Setup Instructions](#setup-instructions)), you can access the following pages:
 
-- **Homepage**: [http://localhost:5000/](http://localhost:5000/) - Provides an overview of the system and role-based access descriptions.
-- **Donor Registration**: [http://localhost:5000/donate-blood](http://localhost:5000/donate-blood) - Register as a new donor and access the Donor Dashboard.
-- **Biomedical Services**: [http://localhost:5000/biomedical-services](http://localhost:5000/biomedical-services) - Learn about blood testing, storage, and distribution processes.
-- **Data Insights**: [http://localhost:5000/insights](http://localhost:5000/insights) - Access predefined analytical queries organized into categories.
+- **Homepage**: [http://localhost:5002/](http://localhost:5002/) - Provides an overview of the system and role-based access descriptions.
+- **Donor Registration**: [http://localhost:5002/donate-blood](http://localhost:5002/donate-blood) - Register as a new donor and access the Donor Dashboard.
+- **Biomedical Services**: [http://localhost:5002/biomedical-services](http://localhost:5002/biomedical-services) - Learn about blood testing, storage, and distribution processes.
+- **Data Insights**: [http://localhost:5002/insights](http://localhost:5002/insights) - Access predefined analytical queries organized into categories.
 - **Dashboards**:
-  - **Donor Dashboard**: [http://localhost:5000/donor](http://localhost:5000/donor) - Schedule donations, view donation history, and manage appointments.
-  - **Hospital Dashboard**: [http://localhost:5000/hospital](http://localhost:5000/hospital) - Manage blood requests, track donation schedules, and search donors by blood type.
-  - **Admin Dashboard**: [http://localhost:5000/admin](http://localhost:5000/admin) - Oversee system operations, manage all data, and generate reports.
+  - **Donor Dashboard**: [http://localhost:5002/donor](http://localhost:5002/donor) - Schedule donations, view donation history, and manage appointments.
+  - **Hospital Dashboard**: [http://localhost:5002/hospital](http://localhost:5002/hospital) - Manage blood requests, track donation schedules, and search donors by blood type.
+  - **Admin Dashboard**: [http://localhost:5002/admin](http://localhost:5002/admin) - Oversee system operations, manage all data, and generate reports.
 
 ### Features
 
